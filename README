@@ -1,0 +1,28 @@
+This branch contains two experimental use-cases for the federated use-case of DART.
+----------------------------------------------------------------------------------
+1. Distributed k-means:
+Start the file distributed_kmeans.py in the folder federated_clustering with two
+parameters nodefile path and path of the data.
+----------------------------------------------------------------------------------
+2. Federated Averaging on MNIST:
+Start the file server.py in the folder federated_averaging_usecase wiith the 
+parameter nodefile path.
+
+----------------------------------------------------------------------------------
+How to integrate Fed-Dart in the worklof of your use-case:
+- Write the software parts for server and device side
+- Create an Coordinator on server side, which is responsible for the managment of
+  the devices in general
+- For each learning workround create an aggregtor, which shedules the task to 
+  the devices 
+- you can send datas to the device with option aggregator.start_task or 
+  aggregator.broadcast_task: the differences between these options are 
+  the storage of the result. With start_task you can an own handle for
+  each device, in the case of broadcast_task the same handle for all 
+  devices. 
+- The method aggregator.get_result(device, task) can have as return 
+  the result of the device or None, in case of Timeout or the computation
+  on the device is not finished yet.
+- on device side you must integrate the connection_local.py to your
+  workflow. This file manages the communication between server and
+  device.
