@@ -4,6 +4,7 @@ import time
 import argparse
 import getpass 
 import sys
+import socket
 
 from tfmodel_server import EmbeddingModelAirPollution, MNIST
 
@@ -14,27 +15,20 @@ from Aggregator import Aggregator
 
 parser = argparse.ArgumentParser(description='Federated DART Example Federated Averaging')
 
-parser.add_argument('--nodefile', default='/home/' + getpass.getuser() + '/nodefile', help="default: %(default)s")
+parser.add_argument('--ssh_username', default=getpass.getuser(), help="default: %(default)s")
+parser.add_argument('--ssh_port', default="2222", help="default: %(default)s")
+parser.add_argument('--ssh_public_key', default='/home/' + getpass.getuser() + '/.ssh/id_rsa.pub', help="default: %(default)s")
+parser.add_argument('--ssh_private_key', default='/home/' + getpass.getuser() + '/.ssh/id_rsa', help="default: %(default)s")
+
+parser.add_argument('--devices', default='[["127.0.0.1", "2222"]]')
+
 args = parser.parse_args()
-nodefile_path = args.nodefile
-number_worker = 2
-
-def get_available_devices(nodefile_path, number_devices):
-    available_devices = []
-    with open(nodefile_path, 'r') as nodefile:
-        nodefile = json.load(nodefile)
-        for worker in nodefile:
-            for host in nodefile[worker]["hosts"]:
-                device = [host, nodefile[worker]["port"]]
-                available_devices.append(device)
-    list_devices = []
-    for i in range(number_devices):
-        list_devices.append(available_devices[i % len(available_devices)])
-    return list_devices
-    
-
-available_devices = get_available_devices(nodefile_path, number_worker)
-coordinator_one = Coordinator() #responsible for an FL population of devices
+available_devices = json.loads(args.devices)
+coordinator_one = Coordinator(
+    ssh_username = args.ssh_username, 
+    ssh_port = int(args.ssh_port),
+    ssh_public_key = args.ssh_public_key,
+    ssh_private_key = args.ssh_private_key) #responsible for an FL population of devices
 # always one single owner for every FL population
 current_path = os.getcwd()
 for i in range(len(available_devices)):

@@ -2,51 +2,29 @@ import os
 import socket
 import sys
 import time
-import ports as ports
 import json
 import pickle
 import time
 from itertools import chain
-HOME = os.environ['HOME']
-USER = os.environ['USER']
-HOST = socket.gethostname() #Return a string containing the hostname of the machine where the Python interpreter is currently executing
-
 def import_dart_lib():
     sys.path.insert(0, os.environ['DART_HOME'] + '/lib')
     from dart import dart_context
     return dart_context
 
-def create_ssh_variables():
-    import local_configuration as lc
-    ssh_config_path = lc.get_ssh_config_path()
-    ssh_private_key = lc.get_ssh_private_key()
-    ssh_public_key = lc.get_ssh_public_key()
-    
-    port = 22
-    if ssh_config_path != "":
-        f = open(ssh_config_path, "r")
-        c = ports.parse_ssh_config(f)
-        hosts=[]
-        for h in c.get_hostnames():
-            if h == HOST: 
-                host = ports.lookup_ssh_host_config(h, c)
-                port = int(host['port'])
-    return ssh_public_key, ssh_private_key, port
-
 class Runtime:
     worker_number = 0
-    def __init__(self):
+    def __init__(self, **kwargs):
         dart_context  = import_dart_lib()
-        ssh_public_key, ssh_private_key, port = create_ssh_variables()
         directory_python_files = sys.exec_prefix #directory where platform-dependent python files are installed
+
+        print("Starting runtime with user:", kwargs["ssh_username"], ", port:", kwargs["ssh_port"],
+            ", ssh_public_key:", kwargs["ssh_public_key"],
+            ", ssh_private_key:", kwargs["ssh_private_key"])
+
         self.dc = dart_context ( directory_python_files 
                                , monitor_url = "."
-                               , ssh_username = USER
-                               , ssh_port = port
-                               , ssh_public_key = ssh_public_key
-                               , ssh_private_key = ssh_private_key
+                               , **kwargs
                                )
-        self.nodefile_devices = {}
         self.dc_active = False
        
     def terminate(self):
@@ -63,49 +41,9 @@ class Runtime:
             else it adds the device during runtime
         """
         if self.dc_active == False:
-            current_nodefile = self._extend_nodefile_devices( host
-                                                            , workers_per_host
-                                                            , name_edge_device
-                                                            , shm_size
-                                                            , port
-                                                            )
-            nodefile = os.getcwd() +  '/nodefile_bml' #TODO: remove in future in the moment dc.start can only read nodefile
-            with open(nodefile, 'w') as outfile:
-                json.dump(current_nodefile, outfile)
-            self.dc.start(nodefile) #its necessary in the moment to start from a nodefile as a real file
-            self.nodefile_devices.update(current_nodefile)
+            self.dc.start()
             self.dc_active = True
-        else:
-            current_nodefile = self._extend_nodefile_devices( host
-                                                            , workers_per_host
-                                                            , name_edge_device
-                                                            , shm_size
-                                                            , port
-                                                            )
-            nodefile = os.getcwd() +  '/nodefile_bml' #TODO: remove in future in the moment dc.start can only read nodefile
-            with open(nodefile, 'w') as outfile:
-                json.dump(current_nodefile, outfile)
-            self.dc.add_workers(nodefile)
-            self.nodefile_devices.update(current_nodefile)
-            
-    def _extend_nodefile_devices( self
-                                , host
-                                , workers_per_host
-                                , name_edge_device
-                                , shm_size
-                                , port
-                                ):
-        #complicated, but necessary in the moment
-        paras = {}
-        nodefile_devices = {}
-        paras["capabilities"] = [name_edge_device]
-        paras["num_per_node"] = workers_per_host
-        paras["shm_size"] = shm_size
-        paras["port"] = port
-        paras["hosts"] = [host]
-        nodefile_devices["worker"+str(Runtime.worker_number)] = paras
-        Runtime.worker_number += 1
-        return nodefile_devices
+        self.dc.add_workers([ host ], workers_per_host, [ name_edge_device ], shm_size)
 
     def send_task( self
                  , connection_request

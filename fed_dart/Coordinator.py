@@ -8,8 +8,8 @@ class Coordinator:
     """ Responsible for starting the runtime and 
         the managment of the devices over all rounds.
     """
-    def __init__(self):
-        self.runtime = Runtime()
+    def __init__(self, **kwargs):
+        self.runtime = Runtime(**kwargs)
         self.timeout = 100 #in s
         self.devices = []
 
