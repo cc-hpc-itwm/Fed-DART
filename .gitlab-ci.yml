@@ -1,0 +1,11 @@
+FEDDartTest:
+  stage: test
+  tags: 
+    - feddart-runner
+  script:
+    - source /home/gitlab-runner/miniconda3/etc/profile.d/conda.sh
+    - eval "$(conda shell.bash hook)"
+    - source activate defaultenv
+    - pwd
+    - cd tests
+    - /bin/bash run-all.sh

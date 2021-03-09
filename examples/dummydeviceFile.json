@@ -1,0 +1,11 @@
+{
+    "device_one": { "ipAdress": "client1",
+      "port": 2883,
+      "hardware_config": null
+    },
+    
+   "device_two": { "ipAdress": "client2",
+      "port": 2883,
+      "hardware_config": null
+    }
+  }
