@@ -15,7 +15,7 @@ if [ "$setting" == "y" ]; then
 else
     echo "Installing for ARM machines..."
     #echo "Downloading files..."
-    dart xvf dart_arm.tar.gz
+    tar xvf dart_arm.tar.gz
 fi
 
 echo "leaving dart directory..."
