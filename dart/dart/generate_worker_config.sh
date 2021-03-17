@@ -6,3 +6,5 @@ echo "\"python_home\" : \""$(which python)"\",">> ${WORKERFILE}
 echo "\"module_prefix\" : \""$(pwd)"/example/\",">> ${WORKERFILE}
 echo "\"output_directory\" : \""${HOME}"/feddart/tmp/\",">> ${WORKERFILE}
 echo "}" >>  ${WORKERFILE}
+
+echo "worker config generated!"
