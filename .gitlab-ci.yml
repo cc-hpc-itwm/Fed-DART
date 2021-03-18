@@ -1,12 +1,20 @@
-FEDDartTest:
-  stage: test
-  tags: 
-    - feddart
-  script:
-    - source /home/gitlab-runner/miniconda3/etc/profile.d/conda.sh
-    - eval "$(conda shell.bash hook)"
-    - source activate defaultenv
-    - pwd
-    - cd unittests
-    - /bin/bash run-all.sh
+stages:
+  - build
+  - unit_tests_python
+  - integration_tests
+  - integration_tests_nightly
+
+tags: 
+  - feddart
+
+variables:
+  GIT_STRATEGY: fetch
+  FEDDART_CI_DIR: ${CI_PROJECT_DIR}/meta/ci
+  FEDDART_CI_INSTALL_DIR: ${CI_PROJECT_DIR}/install
+  FEDDART_CI_BUILD_DIR: ${CI_PROJECT_DIR}/build
+  FEDDART_CI_LD_LIBRARY_PATH: ${CI_PROJECT_DIR}/build
+  RUNNER_HOME: /home/gitlab-runner
+
+include: 
+  - local: meta/ci/config/common.yml
 
