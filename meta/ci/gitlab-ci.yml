@@ -4,6 +4,9 @@ stages:
   - integration_tests
   - integration_tests_nightly
 
+tags: 
+  - feddart
+
 variables:
   GIT_STRATEGY: fetch
   FEDDART_CI_DIR: ${CI_PROJECT_DIR}/meta/ci
