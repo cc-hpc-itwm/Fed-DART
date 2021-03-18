@@ -1,6 +1,13 @@
-.feddart_devicelist_cluster_common:
+.feddart_devicelist_common:
   tags:
     - feddart
   script:
     - cd ${FEDDART_CI_DIR}
+    - pwd
+
+###########Build Jobs############
+default_build:
+  extends:
+    - .feddart_devicelist_common
+  script:
     - pwd
