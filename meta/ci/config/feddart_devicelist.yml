@@ -9,7 +9,6 @@
 default_build:
   extends:
     - .feddart_devicelist_common
-  stage:
-    - build
+  stage: build
   script:
     - pwd
