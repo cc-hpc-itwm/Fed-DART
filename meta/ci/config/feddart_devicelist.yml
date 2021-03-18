@@ -16,7 +16,7 @@
 ###########Build Jobs############
 default_build:
   extends:
-    - .feddart_devicelist_common
+    - .common_build_job
   stage: build
   
 default_tests:
