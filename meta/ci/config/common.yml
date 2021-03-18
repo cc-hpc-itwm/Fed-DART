@@ -7,7 +7,7 @@
   tags:
     - feddart
   script:
-    - echo FEDDART_BUILD_TYPE=${FEDDART_BUILD_TYPE}
+    - echo CI_PROJECT_DIR=${CI_PROJECT_DIR}
 
 .release_job:
   variables:
