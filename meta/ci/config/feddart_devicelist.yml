@@ -11,6 +11,7 @@
     - .feddart_devicelist_common
   stage: unit_tests_python
   script:
+    - echo 'Running unit tests...'
     - pwd
 
 ###########Build Jobs############
