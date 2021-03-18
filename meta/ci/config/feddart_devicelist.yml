@@ -2,6 +2,7 @@
   tags:
     - feddart
   script:
+    - pwd
     - cd ${FEDDART_CI_DIR}
     - pwd
 
@@ -10,5 +11,3 @@ default_build:
   extends:
     - .feddart_devicelist_common
   stage: build
-  script:
-    - pwd
