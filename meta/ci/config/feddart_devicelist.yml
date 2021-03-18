@@ -17,6 +17,7 @@
 ###########Build Jobs############
 default_build:
   extends:
+    - .conda_build_job
     - .common_build_job
   stage: build
   
