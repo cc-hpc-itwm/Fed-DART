@@ -16,6 +16,8 @@
   before_script:
     - cd ${CI_PROJECT_DIR}
     - ./prepare_conda.sh
+    - conda activate fed_dart_env
+    - pip install -U pytest
 
 .release_job:
   variables:

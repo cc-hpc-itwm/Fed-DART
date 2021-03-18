@@ -19,6 +19,6 @@ elif [ "$tf" == "n" ]; then
     conda create -y -n ${ENVNAME} python=3.9 pip numpy requests dill
 else
     echo 
-    echo " Timeout: installing without tensorflow"
+    echo " Timeout: installing with tensorflow"
     conda create -y -n ${ENVNAME} python=3.9 pip numpy requests dill tensorflow=2.4
 fi
