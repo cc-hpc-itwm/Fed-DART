@@ -6,8 +6,22 @@
     - cd ${FEDDART_CI_DIR}
     - pwd
 
+.feddart_devicelist_run_tests:
+  extends:
+    - .feddart_devicelist_common
+  stage: unit_tests_python
+  script:
+    - pwd
+
 ###########Build Jobs############
 default_build:
   extends:
     - .feddart_devicelist_common
   stage: build
+  
+default_tests:
+  extends:
+    - .feddart_devicelist_run_tests
+  needs:
+    - job: default_build
+  
