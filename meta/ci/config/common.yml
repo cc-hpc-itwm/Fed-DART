@@ -8,7 +8,7 @@
     - feddart
   script:
     - echo CI_PROJECT_DIR=${CI_PROJECT_DIR}
-    - ./${CI_PROJECT_DIR}/prepare_conda.sh
+    #- ./${CI_PROJECT_DIR}/prepare_conda.sh
 
 .release_job:
   variables:
