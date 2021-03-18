@@ -15,3 +15,8 @@
 .debug_job:
   variables:
     FEDDART_BUILD_TYPE: Debug
+
+
+.common_after_script:
+  after_script:
+    - echo FEDDART_BUILD_TYPE=${FEDDART_BUILD_TYPE}
