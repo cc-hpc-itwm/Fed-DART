@@ -1,8 +1,7 @@
 import unittest
 import os
 import sys
-d = os.path.dirname(os.getcwd())
-sys.path.append(d + '/src')
+sys.path.append('../feddart')
 from DummyRuntime import DummyDARTRuntime
 from deviceAggregator import DeviceAggregator
 from deviceHolder import DeviceHolder

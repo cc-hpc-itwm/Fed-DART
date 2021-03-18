@@ -16,8 +16,9 @@ class DeviceSingle(AbstractDeviceBase):
     @param initialized boolean , if device already has received the init task 
     """
     def __init__( self
-                , name
+                , name 
                 , ipAdress
+                , port
                 , dartRuntime = None
                 , physicalName = None
                 , hardwareConfig = None
@@ -28,6 +29,7 @@ class DeviceSingle(AbstractDeviceBase):
         if physicalName == None:
             self.phyiscalName = self.name
         self.ipAdress = ipAdress
+        self.port = port
         self._hardwareConfig = hardwareConfig
         self._openTaskDict = taskDict
         self._finishedTaskDict = {}

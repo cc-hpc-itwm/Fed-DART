@@ -209,16 +209,15 @@ class DartRuntime:
         """
         if deviceName in self._registeredDevices.keys():
             raise KeyError("device name already in list")
-        
-        device = DeviceSingle( deviceName
-                             , deviceIp
+        device = DeviceSingle( name = deviceName
+                             , ipAdress = deviceIp
+                             , port = port
                              , dartRuntime = self
                              , physicalName = None
                              , hardwareConfig = hardwareConfig
                              , taskDict = {}
                              , initTask = initTask
                              )
-        
         self._registeredDevices[deviceName] = device
         #add workers is blocking!
         self.runtime.add_workers( [deviceIp], 1, deviceName, [""],0,{})
@@ -292,19 +291,23 @@ class DartRuntime:
         for each device his own parameter.
 
         @param location_and_parameters list of form [ { 'location' : '...', 'parameter' : ' ...'}, ...]
+        @todo this function can be removed ?!
         """
         self.runtime.add_tasks(jobName, location_and_parameters)
         
-    def broadcastTaskToDevices(self, taskName, deviceList, parameterList):
+    def broadcastTaskToDevices(self, taskName, deviceNamesList, parameterList):
         """!
         Send task to specified physical devices at the same time
 
         @param taskName string of task name
-        @param deviceList list of device names like ['device_one', 'device_two']
+        @param deviceNamesList list of device names like ['device_one', 'device_two']
         @param parameterList specifies parameters for devices like 
                [{'param1': 0, 'param2': 1}, {'param1': 10, 'param2': 5}]
         """
-        parameterDARTformat = self._messageTranslator.convertPython2Dart(deviceList, parameterList)
+        for deviceName in deviceNamesList:
+            if deviceName not in self.registeredDevicesbyName:
+                raise ValueError("Device with name " + deviceName + " is not known!")
+        parameterDARTformat = self._messageTranslator.convertPython2Dart(deviceNamesList, parameterList)
         self.runtime.add_tasks(taskName, parameterDARTformat)
         
     def get_ServerInformation(self):
