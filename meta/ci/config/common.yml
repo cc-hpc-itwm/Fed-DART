@@ -10,6 +10,7 @@
     - echo CI_PROJECT_DIR=${CI_PROJECT_DIR}
     - cd ${CI_PROJECT_DIR}
     - ./prepare_conda.sh
+    - ./install.sh
 
 .release_job:
   variables:
