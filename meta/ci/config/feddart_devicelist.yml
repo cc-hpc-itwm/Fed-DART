@@ -1,0 +1,6 @@
+.feddart_devicelist_cluster_common:
+  tags:
+    - feddart
+  script:
+    - cd ${FEDDART_CI_DIR}
+    - pwd
