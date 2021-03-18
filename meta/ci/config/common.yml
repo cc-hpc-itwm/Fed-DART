@@ -3,10 +3,19 @@
     when: always
     expire_in: 1 day
     paths:
-      - ${FEDDART_CI_BUILD_DIR}
-
+      - ${CI_PROJECT_DIR}
+  tags:
+    - feddart
   script:
-    - echo FEDDART_BUILD_TYPE=${FEDDART_BUILD_TYPE}
+    - cd ${CI_PROJECT_DIR}
+    - ./install.sh
+
+.conda_build_job:
+  tags:
+    - feddart
+  before_script:
+    - cd ${CI_PROJECT_DIR}
+    - ./prepare_conda.sh
 
 .release_job:
   variables:

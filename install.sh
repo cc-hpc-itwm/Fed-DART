@@ -1,6 +1,4 @@
 #!/bin/bash
-./prepare_conda.sh
-
 echo "entering dart directory..."
 cd dart
 

@@ -1,6 +1,29 @@
-.feddart_devicelist_cluster_common:
+.feddart_devicelist_common:
   tags:
     - feddart
   script:
+    - pwd
     - cd ${FEDDART_CI_DIR}
     - pwd
+
+.feddart_devicelist_run_tests:
+  extends:
+    - .feddart_devicelist_common
+  stage: unit_tests_python
+  script:
+    - echo 'Running unit tests...'
+    - pwd
+
+###########Build Jobs############
+default_build:
+  extends:
+    - .conda_build_job
+    - .common_build_job
+  stage: build
+  
+default_tests:
+  extends:
+    - .feddart_devicelist_run_tests
+  needs:
+    - job: default_build
+  
