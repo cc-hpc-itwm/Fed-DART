@@ -4,7 +4,8 @@
     expire_in: 1 day
     paths:
       - ${FEDDART_CI_BUILD_DIR}
-
+  tags:
+    - feddart
   script:
     - echo FEDDART_BUILD_TYPE=${FEDDART_BUILD_TYPE}
 
