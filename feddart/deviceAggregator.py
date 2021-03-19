@@ -237,7 +237,7 @@ class DeviceAggregator(AggregatorBase):
 
         @todo not implemented  in the moment use case specific
         """
-        return print("aggregation is not implemented in the momment")
+        return print("aggregation is not implemented at the momment")
 
     def requestAggregation( self
                           , boolean_aggregate

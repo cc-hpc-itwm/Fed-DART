@@ -1,7 +1,7 @@
 from feddart.workflowManager import WorkflowManager
 import numpy as np
 import time
-TEST_MODE = False
+TEST_MODE = True
 DEFAULT_K = 3
 DEFAULT_NUM_LOCAL_ITERATIONS = 100
 DEFAULT_NUM_ITERATIONS = 5
@@ -59,7 +59,6 @@ for global_round in range(DEFAULT_NUM_ITERATIONS):
 
     # Update global centroids
     global_centroids = new_centroids
-
     # Stop if stop criterion is reached
     if centroids_mean_diff_sq < STOP_CRITERION:
         logger.info("Stop criterion reached at iteration %s.", i)

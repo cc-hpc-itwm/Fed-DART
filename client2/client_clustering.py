@@ -16,7 +16,7 @@ def init(init_var):
         Important: variable name (here: init_var) must have
         the same name as defined in the InitTask!!!
     """
-    return True #this function is only for demonstrating
+    pass
 
 @feddart
 def local_k_means(global_centroids, local_iterations):

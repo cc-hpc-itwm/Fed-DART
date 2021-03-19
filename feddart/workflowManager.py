@@ -214,3 +214,4 @@ class WorkflowManager:
         # task rejected
         else: 
             print("task was not accepted - change your constraints?")
+        return request_status

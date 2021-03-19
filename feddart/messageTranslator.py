@@ -2,43 +2,43 @@ import abc
 import ast
 import dill
 import binascii
+import functools
 
-class MessageTranslatorBase:
+class MessageTranslatorBase(abc.ABC):
     #different application possible; e.g no compression of message, maximal compression, protobuf/pickle/dill
-    __metaclass__ = abc.ABCMeta
 
-
-# abstract functions
+    # abstract functions
 
     @classmethod
     @abc.abstractmethod
-    def convertPython2Dart(self, list_params):
+    def convertPython2Dart(cls, list_client, list_params):
         """convert default message to dart format and return feasible format"""
         raise NotImplementedError("subclass has to implement this")
 
     @classmethod
     @abc.abstractmethod
-    def convertDart2Python(self, dict_result):
+    def convertDart2Python(cls, results, deviceName):
         """convert dart format to standard python format"""
         raise NotImplementedError("subclass has to implement this")
-        
+
+
 class MessageTranslator(MessageTranslatorBase):
 
     def __init__(self):
         pass
 
     @classmethod
-    def convertPython2Dart(self, list_client, list_params):
+    def convertPython2Dart(cls, list_client, list_params):
         """convert default message to dart format and return feasible format"""
         task_list = []
         #TODO: serialize parameters
         for client, params in zip(list_client, list_params):
-            dict_client = {'location': client, 'parameter': self.packMessage(params)}
+            dict_client = {'location': client, 'parameter': cls.packMessage(params)}
             task_list.append(dict_client)
         return task_list
         
     @classmethod
-    def convertDart2Python(self, results, deviceName):
+    def convertDart2Python(cls, results, deviceName):
         device_result = { 'duration': None
                         , 'result': None
                         }
@@ -47,38 +47,43 @@ class MessageTranslator(MessageTranslatorBase):
             workerName = result['worker'].split("-",1)[0]
             if 'success' in result.keys() and deviceName == workerName:
                 device_result['duration'] = result['duration']
-                device_result['result'] = self.unpackBackMessage(result['success'])
+                device_result['result'] = cls.unpackBackMessage(result['success'])
                 resultID = result['id']
         return device_result, resultID
 
     @classmethod
-    def packMessage(self, message):
+    def packMessage(cls, message):
         message = dill.dumps(message)
         message = binascii.b2a_base64(message)
         return str(message)
 
     @classmethod
-    def unpackMessage(self, message):
+    def unpackMessage(cls, message):
         message = ast.literal_eval (message)
         message = binascii.a2b_base64(message)
         message = dill.loads(message)
         return message
 
     @classmethod
-    def packBackMessage(self, message):
+    def packBackMessage(cls, message):
         message = dill.dumps(message)
         message = binascii.b2a_base64(message)
         return message
+
     @classmethod
-    def unpackBackMessage(self, message):
+    def unpackBackMessage(cls, message):
         message = binascii.a2b_base64(message)
         message = dill.loads(message)
         return message
 
 def feddart(execute_function):
-    def f_new(_params):
+    @functools.wraps(execute_function)
+    def wrapper_function(_params):
         params = MessageTranslator.unpackMessage(_params)
-        result =  execute_function(**params)
+        try:
+            result = execute_function(**params)
+        except Exception as e:
+            result = e
         counter = 0
         result_dict = {}
         if type(result) is tuple:
@@ -89,5 +94,5 @@ def feddart(execute_function):
             result_dict['result_0'] = result
         packed_result_dict = MessageTranslator.packBackMessage(result_dict)
         return packed_result_dict
-    return f_new
+    return wrapper_function
 

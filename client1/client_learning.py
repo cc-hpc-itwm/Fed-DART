@@ -16,14 +16,13 @@ def get_mnist_train_data():
 
 @feddart
 def init(model_structure):
-    try:
-        client_model = keras.models.model_from_json(model_structure)
-        client_model.compile(loss = "mse")
-        cwd = os.path.dirname(os.path.abspath(__file__))
-        client_model.save(cwd + "/" + MODEL_NAME)
-        return True
-    except:
-        return False
+    client_model = keras.models.model_from_json(model_structure)
+    client_model.compile(loss = "mse")
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    directory = cwd + "/" + MODEL_NAME
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    client_model.save(directory)
         
 @feddart
 def learn(global_model_weights, batch_size, epochs):

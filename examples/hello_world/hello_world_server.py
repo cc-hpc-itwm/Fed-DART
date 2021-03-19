@@ -55,12 +55,12 @@ for deviceResult in taskResult:
     print(deviceResult.deviceName)
 manager.removeDevice("device_one")
 manager.stopTask("task_one")
-manager.startTask( taskType = 1 
-                 , taskName = "task_two"
-                 , parameterDict =  { "device_one": { "param1": 0 ,"param2": 1}
-                                    , "device_two": {"param1": 10 ,"param2": 5}
-                                    }
-                 , filePath = "hello_world_client"
-                 , executeFunction = "hello_world_2"
-                 ) #this task shouldn't be accepted because device_one is removed 
+task_acceptance = manager.startTask( taskType = 1 
+                                   , taskName = "task_two"
+                                   , parameterDict =  { "device_one": { "param1": 0 ,"param2": 1}
+                                                      , "device_two": {"param1": 10 ,"param2": 5}
+                                                      }
+                                  , filePath = "hello_world_client"
+                                  , executeFunction = "hello_world_2"
+                                  ) #this task shouldn't be accepted because device_one is removed 
 manager.stopFedDART()
