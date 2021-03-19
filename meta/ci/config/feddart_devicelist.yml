@@ -18,7 +18,7 @@
     - .feddart_devicelist_common
   stage: integration_tests
   script:
-    - echo 'Running unit tests...'
+    - echo 'Running integration tests...'
 
 ###########Build Jobs############ 
 default_tests:
