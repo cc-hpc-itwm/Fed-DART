@@ -1,6 +1,7 @@
 from feddart.aggregator import AggregatorBase
 from feddart.deviceHolder import DeviceHolder
 from feddart.logServer import LogServer
+from feddart.deviceSingle import DeviceSingle
 import math
 
 
@@ -17,10 +18,7 @@ class DeviceAggregator(AggregatorBase):
 
     def __init__( self 
                 , task = None
-                , deviceHolders = []
-                , childAggregators = []
                 , maxSizeDeviceHolder = 1
-                , aggregatedResult = None
                 , logServer = None
                 ):
         """!
@@ -33,11 +31,12 @@ class DeviceAggregator(AggregatorBase):
 
         """
         self._task = task
-        self._deviceHolders = deviceHolders
-        self._childAggregators = childAggregators
-        self._aggregatedResult = aggregatedResult
+        self._deviceHolders = []
+        self._childAggregators = []
+        self._aggregatedResult = None
         self._maxSizeDeviceHolder = maxSizeDeviceHolder
         self._logServer = logServer
+        self._instantiateDeviceHolders()
 #--------------------------------------------        
     @property
     def maxSizeDeviceHolder(self):
@@ -265,7 +264,7 @@ class DeviceAggregator(AggregatorBase):
             return aggregatedResult
         return result
 
-    def instantiateDeviceHolders(self):
+    def _instantiateDeviceHolders(self):
         """!
         Instantiate devicHolders and append to list of DeviceHolders
         """
@@ -305,6 +304,8 @@ class DeviceAggregator(AggregatorBase):
 
         @param device instance of class deviceSingle
         """
+        if not isinstance(device, DeviceSingle):
+            raise Exception("Device is not an instance of DeviceSingle !")
         # check whether there are child aggregators, if so, return without doing anything
         #TODO: implement function in case of child aggregators
         if self.childAggregators:
@@ -314,6 +315,8 @@ class DeviceAggregator(AggregatorBase):
             raise ValueError("Device holders are completly full!")
         else:
             for deviceHolder in self.deviceHolders:
+                if device in deviceHolder.devices:
+                    raise Exception("Device is already in deviceHolder!")
                 if deviceHolder.check_full() == False:
                     deviceHolder.addDevice(device)
                     return True
@@ -410,11 +413,7 @@ class DeviceAggregator(AggregatorBase):
             for i in range(self._maxNumChildAggregators):
                 #print("childaggregator: ", i)
                 aggregator = DeviceAggregator( task = None
-                                             , deviceHolders = []
-                                             , currentDevices = []
-                                             , childAggregators = []
                                              , maxSizeDeviceHolder = self._maxSizeDeviceHolder
-                                             , aggregatedResult = None
                                              )
                 # allow in the moment only trees with depth one
                 #aggregator.create_needed_childAggregators(devicesPerChild)                                

@@ -263,10 +263,8 @@ class Selector():
         @param numDevices amount of devices
         """
         aggregator = DeviceAggregator( task = None
-                                     , deviceHolders= []
-                                     , childAggregators= []
                                      , maxSizeDeviceHolder= self._max_size_device_holder
-                                     , aggregatedResult = None
+                                     , logServer = None
                                      )
         # get sufficient number of devices
         aggregator.create_needed_childAggregators(numDevices)
@@ -328,7 +326,6 @@ class Selector():
                 aggregator = self.instantiateAggregator(task.numDevices)
                 aggregator.task = task
                 choosen_devices = self.getDevicesForDeviceHolder(task) #here we already add task to device
-                aggregator.instantiateDeviceHolders()
                 for device in choosen_devices:
                     aggregator.addSingleDevice(device) #add here task to devices
                     device.addTask(task.taskName, task.parameterDict[device.name])

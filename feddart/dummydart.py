@@ -327,6 +327,7 @@ class dummyClient:
         if rightJob:
             return rightJob.resultDict
         else:
+            print("no such an job is running on server")
             return {'results': [], 'job':{}}
 	
     def delete_job_result(self, jobName, resultID):

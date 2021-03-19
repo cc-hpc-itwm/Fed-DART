@@ -89,7 +89,7 @@ class AggregatorBase(abc.ABC):
         raise NotImplementedError("Subclasses should implement this!")
         
     @abc.abstractmethod
-    def instantiateDeviceHolders(self):
+    def _instantiateDeviceHolders(self):
         raise NotImplementedError("Subclasses should implement this!")
 
     @abc.abstractmethod
