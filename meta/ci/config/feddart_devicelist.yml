@@ -12,18 +12,19 @@
   stage: unit_tests_python
   script:
     - echo 'Running unit tests...'
-    - pwd
 
-###########Build Jobs############
-default_build:
+.feddart_devicelist_run_integration_tests:
   extends:
-    - .conda_build_job
-    - .common_build_job
-  stage: build
-  
+    - .feddart_devicelist_common
+  stage: integration_tests
+  script:
+    - echo 'Running unit tests...'
+
+###########Build Jobs############ 
 default_tests:
   extends:
     - .feddart_devicelist_run_tests
+    - .feddart_devicelist_run_integration_tests
   needs:
     - job: default_build
   
