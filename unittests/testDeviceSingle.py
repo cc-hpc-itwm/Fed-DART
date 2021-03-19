@@ -185,11 +185,11 @@ class TestDeviceSingle(unittest.TestCase):
                        , "init" #function
                        , configFile
                        )
-        self.deviceSingle.initTask = task
         self.assertTrue( self.deviceSingle.initialized == True
                        , msg = "Device should be initialized"
                        )
         self.deviceSingle._initialized = False
+        self.deviceSingle.initTask = task
         self.dartRuntime.addSingleDevice( self.deviceSingle.name
                                         , self.deviceSingle.ipAdress
                                         , self.deviceSingle.port 
@@ -200,7 +200,7 @@ class TestDeviceSingle(unittest.TestCase):
         # it must be explicitly add to self.deviceSingle afterwards 
         self.deviceSingle.addTask(task.taskName, task.parameterDict)
         self.deviceSingle.startTask(task)
-        self.assertTrue( self.deviceSingle.initialized == True
+        self.assertTrue( self.deviceSingle.initialized
                        , msg = "Device should be initialized"
                        )
 

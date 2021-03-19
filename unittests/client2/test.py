@@ -11,6 +11,6 @@ def test(param1, param2):
 @feddart
 def init(bool_string):
     if bool_string == "True":
-        return True
+        pass
     else:
-        return False
+        raise ValueError("test")

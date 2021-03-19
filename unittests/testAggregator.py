@@ -2,22 +2,12 @@ import unittest
 import os
 import sys
 sys.path.append('../feddart')
-from DummyRuntime import DummyDARTRuntime
-from deviceAggregator import DeviceAggregator
-from deviceHolder import DeviceHolder
-from deviceSingle import DeviceSingle
-class DummyTask:
-
-    def __init__( self
-                , taskName
-                , filePath
-                , executeFunction
-                ):
-        self.taskName = taskName
-        self.filePath = filePath
-        self.executeFunction = executeFunction
+from feddart.deviceAggregator import DeviceAggregator
+from feddart.deviceHolder import DeviceHolder
+from feddart.deviceSingle import DeviceSingle
 
 
+"""
 class TestDeviceAggregator(unittest.TestCase):
 
     def setUp(self):
@@ -84,7 +74,7 @@ class TestDeviceAggregator(unittest.TestCase):
         self.assertTrue( self.deviceAggregator.get_TaskStatus() == "in progress"
                        , msg = "wrong task status!"
                        )
-        
+"""       
 
 if __name__ == '__main__':
     unittest.main(verbosity = 2)
