@@ -43,8 +43,13 @@ In the case you want to configure the DART-Client go into the folder /worker and
 }
 ```
 ## Getting Started: Examples 
-We have three simple examples to sketch the general workflow of using Fed-DART. For the sake of brevity we look on the 
-federated averaging example on the MNIST dataset.
+We have three simple examples to sketch the general workflow of using Fed-DART.
+All examples have two options
+```python
+python example_programm -m test/real -ep 0
+```
+The option -m switch between test or real mode. The option -ep is needed for test mode to have an error probability. 
+For the sake of brevity we look on the federated averaging example on the MNIST dataset.
 The code which runs on end users local machine can be found in examples/federated_averaging.
 Before executing the learning algorithm the end-user must initialize the WorkflowManager, which 
 is the user-interface to Fed-DART.
@@ -56,7 +61,7 @@ For some use-case it's necessary, that an initialization task is executed before
 In the current example, the client must know the model structure before training the model itself (we only send 
 the weights during learning to the clients). Therefore the use can create an init task at the begining. Fed-DART
 automatically send this init task to clients, also to later connected ones, and checks if the init task was sucessfully
-executed on the client, before acceptig new tasks. The server and server-known clients can 
+executed on the client, before accepting new tasks. The server and server-known clients can 
 be started through the function startFedDART.
 ```python
 manager.createInitTask( parameterDict = {"model_structure": global_model.to_json()}
@@ -92,18 +97,15 @@ taskResult = manager.getTaskResult(task_name) #return all results which are curr
 ```
 To excute this function we will look now on client side into the file client_learning and the two functions
 init und learn. To use this function together with feddart you must decorate them with @feddart.
+The init function has no return. If an exception is thrown during the init task it will be automatically returned.
 
 ```python
 from feddart.messageTranslator import feddart
 
 @feddart
 def init(model_structure):
-    try: 
-        client_model = keras.models.model_from_json(model_structure)
-        #then store it somewhere, see code 
-        return True
-    except:
-        return False
+    client_model = keras.models.model_from_json(model_structure)
+    #then store it somewhere 
 
 @feddart
 def learn(global_model_weights, batch_size, epochs):

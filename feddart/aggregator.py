@@ -1,13 +1,9 @@
 import abc
 
-class AggregatorBase:
-    """!
+class AggregatorBase(abc.ABC):
 
-    """
-    __metaclass__ = abc.ABCMeta
     _logServer = None
- 
-
+    
     @property
     @abc.abstractmethod
     def logServer(self):
@@ -37,16 +33,6 @@ class AggregatorBase:
     @abc.abstractmethod
     def deviceHolders(self, new_list):
         return
-#------------------------------------
-    @property
-    @abc.abstractmethod
-    def currentDevices(self):
-        return None
-
-    @currentDevices.setter
-    @abc.abstractmethod
-    def currentDevices(self, new_list):
-        return
 #-------------------------------------
     @property
     @abc.abstractmethod
@@ -60,84 +46,71 @@ class AggregatorBase:
 #-------------------------------------
     @property
     @abc.abstractmethod
-    def aggregated_result(self):
+    def aggregatedResult(self):
         return None
 
-    @aggregated_result.setter
+    @aggregatedResult.setter
     @abc.abstractmethod
-    def aggregated_result(self, new_value):
+    def aggregatedResult(self, new_value):
+        return
+
+#-------------------------------------
+    @property
+    @abc.abstractmethod
+    def maxSizeDeviceHolder(self):
+        return None
+
+    @maxSizeDeviceHolder.setter
+    @abc.abstractmethod
+    def maxSizeDeviceHolder(self, new_value):
         return
     
-#--------------------------------------
-# class functions
-#----------------------------------------
-
-    @classmethod
+#-------------------------------------
+    @property
     @abc.abstractmethod
-    def requestAggregation(self):
-        """!
-        In case of an aggregator of aggregators, this functions triggers the 
-        aggregations by the child aggregators. Otherwise, it aggregates the results
-        provided by all devices in its deviceHolders.
-        
-        """
-        raise NotImplementedError("Subclasses should implement this!")
-        
-
-    @classmethod
-    @abc.abstractmethod
-    def aggregateDevices(self):
-        raise NotImplementedError("Subclasses should implement this!")
-        
-
-    @classmethod
-    @abc.abstractmethod
-    def aggregate(self):
-        raise NotImplementedError("Subclasses should implement this!")
-        
-
-    @classmethod
-    @abc.abstractmethod
-    def instantiateDeviceHolder(self):
-        raise NotImplementedError("Subclasses should implement this!")
-        
+    def allDevices(self):
+        return None
     
-    @classmethod
+
+    @abc.abstractmethod
+    def addAggregator(self, newAggregator):
+        raise NotImplementedError("Subclasses should implement this!")
+
+    @abc.abstractmethod
+    def get_TaskStatus(self):
+        raise NotImplementedError("Subclasses should implement this!")
+
+    @abc.abstractmethod
+    def aggregate_devicesResults(self, boolean_aggregate):
+        raise NotImplementedError("Subclasses should implement this!")
+
+    @abc.abstractmethod
+    def requestAggregation(self, boolean_aggregate):
+        raise NotImplementedError("Subclasses should implement this!")
+        
+    @abc.abstractmethod
+    def instantiateDeviceHolders(self):
+        raise NotImplementedError("Subclasses should implement this!")
+
+    @abc.abstractmethod
+    def addSingleDevice(self, device):
+        raise NotImplementedError("Subclasses should implement this!")
+        
     @abc.abstractmethod
     def restartSelector(self):
-        raise NotImplementedError("Subclasses should implement this!")               
+        raise NotImplementedError("Subclasses should implement this!")  
 
-    @classmethod
     @abc.abstractmethod
-    def addSingleDevice(self):
-        raise NotImplementedError("Subclasses should implement this!")
-          
-    @classmethod
+    def broadcastTaskToDevices(self):
+        raise NotImplementedError("Subclasses should implement this!")  
+
     @abc.abstractmethod
-    def sendTaskToDevice(self, task):
-        raise NotImplementedError("Subclasses should implement this!")
-        
+    def stopTask(self):
+        raise NotImplementedError("Subclasses should implement this!")             
 
     @classmethod
     @abc.abstractmethod
     def sendLog(self, task):
         raise NotImplementedError("Subclasses should implement this!")
 
-    @abc.abstractmethod
-    def addAggregator(self, new_aggregator):
-        """!
-        Aggregators can follow a hierarchical structure to balance the load. If an aggregator
-        already has at least one deviceHolder, it cannot add an aggregator. In case the aggregator
-        can have childAggregators, this function adds a new aggregator to the list. 
-        @param new_aggregator the new childAggregator
-        """
-        raise NotImplementedError("Subclasses should implement this!")
-        
-
-"""					
-		requestSelectorUpdateByRuntime	DART-Runtime	
-		sendTaskToDevice	currentdevices	list of devices
-		requestResults	Selector	
-		finalizeTask		returns result
-		getIntermediateResult		return aggregatedResult
-        """
+    

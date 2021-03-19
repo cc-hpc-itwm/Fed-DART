@@ -7,7 +7,7 @@ class job_status(Enum):
   running = 1
   stopped = 2
 
-class client:
+class Client:
   ##
   # Initializes the client
   # @param server     the server addr, e.g., "https://127.0.0.1:7777"

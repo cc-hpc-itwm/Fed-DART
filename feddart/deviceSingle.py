@@ -133,7 +133,7 @@ class DeviceSingle(AbstractDeviceBase):
             initTaskName = self.initTask.taskName
             if self.has_taskResult(initTaskName):
                 init_result = self.get_taskResult(initTaskName)
-                if init_result.resultList[0] == True:
+                if init_result.resultList[0] is None:
                     self._initialized = True
         return self._initialized
 

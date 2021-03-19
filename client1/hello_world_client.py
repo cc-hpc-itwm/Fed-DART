@@ -9,5 +9,4 @@ def hello_world_2(param1, param2):
 
 @feddart
 def init(init_var):
-    #return of an init task must be True or False
-    return isinstance(init_var, str)
+    pass

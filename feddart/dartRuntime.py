@@ -6,7 +6,7 @@ import os
 import requests
 import json
 from enum import Enum
-from feddart.dart import client, job_status
+from feddart.dart import Client, job_status
 from feddart.dummydart import dummyClient, dummy_job_status
 
 class DartRuntime:
@@ -33,7 +33,7 @@ class DartRuntime:
         if testMode:
             self._runtime = dummyClient(server, client_key, errorProbability)
         else:
-            self._runtime = client(server, client_key)
+            self._runtime = Client(server, client_key)
         self._maximal_number_devices = maximal_number_devices
         self._maximalNumberOpenJobs = maximalNumberOpenJobs
         self._registeredDevices = {}
@@ -222,7 +222,7 @@ class DartRuntime:
         self._registeredDevices[deviceName] = device
         #add workers is blocking!
         self.runtime.add_workers( [deviceIp], 1, deviceName, [""],0,{})
-        if initTask:
+        if initTask is not None:
             device.addTask(initTask.taskName,  initTask.parameterDict)
             device.startTask(initTask)
         #TODO Luca: where to specify port ?!

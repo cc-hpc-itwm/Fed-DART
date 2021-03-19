@@ -1,9 +1,7 @@
 import abc
 
-class AbstractDeviceBase:
+class AbstractDeviceBase(abc.ABC):
     
-    __metaclass__ = abc.ABCMeta
-
     @property
     @abc.abstractmethod
     def hardwareConfig(self):
@@ -26,66 +24,92 @@ class AbstractDeviceBase:
     
     @property
     @abc.abstractmethod
-    def taskDict(self):
+    def openTaskDict(self):
         return None
 
-    @taskDict.setter
+    @openTaskDict.setter
     @abc.abstractmethod
-    def taskDict(self, new_value):
+    def openTaskDict(self, new_value):
         return
 
-
-
-# abstract functions
-
-    @classmethod
+    @property
     @abc.abstractmethod
-    def getopenTasks(self):
+    def finishedTaskDict(self):
+        return None
+
+    @finishedTaskDict.setter
+    @abc.abstractmethod
+    def finishedTaskDict(self, new_value):
+        return
+    
+    @property
+    @abc.abstractmethod
+    def initTask(self):
+        return None
+
+    @initTask.setter
+    @abc.abstractmethod
+    def initTask(self, new_value):
+        return
+
+    @property
+    @abc.abstractmethod
+    def initialized(self):
+        return None
+
+    @initTask.setter
+    @abc.abstractmethod
+    def initialized(self, new_value):
+        return
+    # abstract functions
+
+    @abc.abstractmethod
+    def isOpenTask(self, taskName):
         raise NotImplementedError("subclass has to implement this")
         return
 
-    @classmethod
     @abc.abstractmethod
-    def getLog(self):
+    def removeOpenTask(self, taskName):
+        raise NotImplementedError("subclass has to implement this")
+        return
+
+    @abc.abstractmethod
+    def getOpenTaskParameter(self, taskName):
+        raise NotImplementedError("subclass has to implement this")
+        return
+
+    @abc.abstractmethod
+    def getLog(self, taskName):
         raise NotImplementedError("subclass has to implement this")
         return  
 
-    @classmethod
     @abc.abstractmethod
-    def getResultbyName(self, task_name):
+    def get_taskResult(self, taskName):
         raise NotImplementedError("subclass has to implement this")
         return  
 
-
-    @classmethod
-    @abc.abstractmethod
-    def getResultbyID(self, task_id):
-        raise NotImplementedError("subclass has to implement this")
-        return  
-
-    @classmethod
     @abc.abstractmethod
     def startTask(self, task):
         raise NotImplementedError("subclass has to implement this")
         return  
 
-    @classmethod
     @abc.abstractmethod
-    def getStatus(self, task_id):
+    def addTask(self, taskName, taskParameter):
+        raise NotImplementedError("subclass has to implement this")
+        return  
+
+    @abc.abstractmethod
+    def has_taskResult(self, taskName):
         raise NotImplementedError("subclass has to implement this")
         return
 
-    @classmethod
     @abc.abstractmethod
-    def validityCheckHardware(self, task):
+    def hasTask(self, taskName):
         raise NotImplementedError("subclass has to implement this")
         return
 
-    @classmethod
-    @abc.abstractmethod
-    def getLog(self, task):
-        raise NotImplementedError("subclass has to implement this")
-        return
+
+    
 
 
 

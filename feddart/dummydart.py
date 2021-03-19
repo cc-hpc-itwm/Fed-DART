@@ -3,7 +3,6 @@ from enum import Enum
 from importlib import import_module
 import random
 import time
-from concurrent.futures import ProcessPoolExecutor
 
 class dummy_job_status(Enum):
     """! 
@@ -17,7 +16,7 @@ class Worker:
     """! 
     The class worker is responsible for
     storing all informations of the real worker.
-    This class is needede because we have a dummy runtime
+    This class is needed because we have a dummy runtime
     without connection to real workers.
     """
          
@@ -46,8 +45,11 @@ class Worker:
 
 class Job:
     """!
-        Stores all relevant infos about a job
+        Stores all relevant info about a job
     """
+    RESULTS = 'results'
+    ID = 'id'
+
     def __init__( self
                 , name
                 , module_path
@@ -58,15 +60,26 @@ class Job:
         @param module_path path to file, which should be executed
         @param method executable function
         @param task_list list with open tasks
-        @param resultDict dict storage of resules analog to real dart-server
+        @param resultDict dict storage of results analog to real dart-server
         """
         self.name = name
         self.module_path = module_path
         self.method = method
         self.task_list = []
         self.resultDict = {}
-        self.resultDict['results'] = []
-        self.resultDict['job'] = {'id': self.name, 'status': '1'}
+        self.resultDict[Job.RESULTS] = []
+        self.resultDict['job'] = {Job.ID: self.name, 'status': '1'}
+
+    def get_new_task_id(self):
+        """
+        Creates a unique task id.
+
+        @return: New unique task id
+        """
+        if self.resultDict[Job.RESULTS]:
+            return max(d[Job.ID] for d in self.resultDict[Job.RESULTS]) + 1
+        else:
+            return 0
 
     def start_computation(self):
         """!
@@ -88,14 +101,14 @@ class Job:
             endTime = time.time()
             duration = endTime - startTime
             taskResultDict = {}
-            taskResultDict['id'] = random.randint(0,10000000)
+            taskResultDict[Job.ID] = self.get_new_task_id()
             taskResultDict['job'] = self.name 
             taskResultDict['host'] = task.worker.hosts
             taskResultDict['worker'] = task.worker.worker_name + "-" + task.worker.hosts
             taskResultDict['start_time'] = startTime
             taskResultDict['duration'] = duration
             taskResultDict['success'] = result
-            self.resultDict['results'].append(taskResultDict)
+            self.resultDict[Job.RESULTS].append(taskResultDict)
         #parallel exection: issues on windows, which uses spawn instead of fork
         #--> atm not supported
         """
@@ -135,9 +148,9 @@ class Job:
         Delete a task result from resultDict
         @param resultID int with ID
         """
-        for taskResult in self.resultDict['results']:
-            if taskResult['id'] == resultID:
-                self.resultDict['results'].remove(taskResult)
+        for taskResult in self.resultDict[Job.RESULTS]:
+            if taskResult[Job.ID] == resultID:
+                self.resultDict[Job.RESULTS].remove(taskResult)
 
 
 class Task:
@@ -262,7 +275,7 @@ class dummyClient:
                                , taskParameter
                                )      
                     rightJob.task_list.append(task)
-        if random.uniform(0,1) < self.probability_error:
+        if random.uniform(0, 1) < self.probability_error:
             raise Exception('response not ok')
         else:
             rightJob.start_computation()
@@ -277,7 +290,7 @@ class dummyClient:
         """
         rightJob = self.getJob(jobName)
         self.job_list.remove(rightJob)
-        if random.uniform(0,1) < self.probability_error:
+        if random.uniform(0, 1) < self.probability_error:
             raise Exception('response not ok')
 	
     def get_job_status(self, jobName):
@@ -291,7 +304,7 @@ class dummyClient:
                 job_exists = True
         if job_exists == False:
             return dummy_job_status(0)
-        if random.uniform(0,1) < self.probability_error:
+        if random.uniform(0, 1) < self.probability_error:
             raise Exception('response not ok')
         else:
             return dummy_job_status(1)
@@ -306,7 +319,7 @@ class dummyClient:
         @param worker_regex ignored at the moment
         """
         rightJob = self.getJob(jobName)
-        if random.uniform(0,1) < self.probability_error:
+        if random.uniform(0, 1) < self.probability_error:
             raise Exception('response not ok')
         return rightJob.resultDict
 	
@@ -318,5 +331,5 @@ class dummyClient:
         """
         rightJob = self.getJob(jobName)
         rightJob.delete(resultID)
-        if random.uniform(0,1) < self.probability_error:
+        if random.uniform(0, 1) < self.probability_error:
             raise Exception('response not ok')

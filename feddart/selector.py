@@ -37,7 +37,7 @@ class Selector():
     @property 
     def runtime(self):
         """!
-        property: rutime. Implements the getter
+        property: runtime. Implements the getter
         """
         return self._runtime
 
@@ -58,7 +58,7 @@ class Selector():
     def deviceNames(self):
         """!
         property: name of devices. Implements the getter
-        @todo: is this property necessary ?
+        @todo: is this property necessary?
         """
         return [device.name for device in self.devices]
 
