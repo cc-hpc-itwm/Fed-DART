@@ -2,8 +2,8 @@ import abc
 
 class AggregatorBase(abc.ABC):
 
- 
-
+    _logServer = None
+    
     @property
     @abc.abstractmethod
     def logServer(self):

@@ -1,24 +1,30 @@
 from feddart.workflowManager import WorkflowManager
 import numpy as np
+import argparse
 import time
-TEST_MODE = True
+parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
+parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
+parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
+args = parser.parse_args()
+if args.mode == "test":
+    manager = WorkflowManager( testMode = True
+                             , errorProbability = int(args.errorProbability)
+                             )
+elif args.mode == "real":
+    manager = WorkflowManager()
+else:
+    raise ValueError("Wrong options for example")
 DEFAULT_K = 3
 DEFAULT_NUM_LOCAL_ITERATIONS = 100
 DEFAULT_NUM_ITERATIONS = 5
 
 STOP_CRITERION = 0.005
-if TEST_MODE:
-    manager = WorkflowManager( testMode = True
-                             , errorProbability = 0
-                             )
-else:
-    manager = WorkflowManager()
 #inittask is an optional task, which must be executed on each client for initialization
 manager.createInitTask( parameterDict = {"init_var": 'hello'}
                       , filePath = "client_clustering"
                       , executeFunction = "init"
                       )
-if TEST_MODE:
+if args.mode == "test":
     manager.startFedDART( runtimeFile = "../serverFile.json" 
                         , deviceFile = "../dummydeviceFile.json"
                         , maximal_numberDevices = 100

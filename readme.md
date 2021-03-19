@@ -43,8 +43,13 @@ In the case you want to configure the DART-Client go into the folder /worker and
 }
 ```
 ## Getting Started: Examples 
-We have three simple examples to sketch the general workflow of using Fed-DART. For the sake of brevity we look on the 
-federated averaging example on the MNIST dataset.
+We have three simple examples to sketch the general workflow of using Fed-DART.
+All examples have two options
+```python
+python example_programm -m test/real -ep 0
+```
+The option -m switch between test or real mode. The option -ep is needed for test mode to have an error probability. 
+For the sake of brevity we look on the federated averaging example on the MNIST dataset.
 The code which runs on end users local machine can be found in examples/federated_averaging.
 Before executing the learning algorithm the end-user must initialize the WorkflowManager, which 
 is the user-interface to Fed-DART.

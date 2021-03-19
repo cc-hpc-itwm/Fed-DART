@@ -2,16 +2,20 @@ from tensorflow.keras.layers import *
 from tensorflow import keras
 from feddart.workflowManager import WorkflowManager
 import numpy as np
+import argparse
 import time 
-TEST_MODE = True
-ERROR_PROBABILITY = 0
-if TEST_MODE:
+parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
+parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
+parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
+args = parser.parse_args()
+if args.mode == "test":
     manager = WorkflowManager( testMode = True
-                             , errorProbability = 0
+                             , errorProbability = int(args.errorProbability)
                              )
-else:
+elif args.mode == "real":
     manager = WorkflowManager()
-
+else:
+    raise ValueError("Wrong options for example")
 global_model = keras.Sequential([ Dense(2, activation='relu', input_shape=(28 * 28,))
                                 , Dense(4, activation='relu')
                                 , Dense(10, activation='softmax')
@@ -22,7 +26,7 @@ manager.createInitTask( parameterDict = {"model_structure": global_model.to_json
                       , filePath = "client_learning"
                       , executeFunction = "init"
                       )
-if TEST_MODE:
+if args.mode == "test":
     manager.startFedDART( runtimeFile = "../serverFile.json" 
                         , deviceFile = "../dummydeviceFile.json"
                         , maximal_numberDevices = 100

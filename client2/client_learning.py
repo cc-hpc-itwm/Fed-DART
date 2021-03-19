@@ -19,7 +19,7 @@ def init(model_structure):
     client_model = keras.models.model_from_json(model_structure)
     client_model.compile(loss = "mse")
     cwd = os.path.dirname(os.path.abspath(__file__))
-    directory = cwd + "/" + MODEL_NAME
+    directory = cwd + os.sep + MODEL_NAME
     if not os.path.exists(directory):
         os.makedirs(directory)
     client_model.save(directory)
