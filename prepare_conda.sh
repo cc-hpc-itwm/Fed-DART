@@ -25,5 +25,7 @@ else
     conda create -y -n ${ENVNAME} python=3.9 pip numpy requests dill tensorflow=2.4
 fi
 
+echo "Install fed-dart package..."
 conda activate ${ENVNAME}
 pip install .
+echo "done!"
