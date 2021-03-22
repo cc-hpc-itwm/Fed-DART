@@ -10,6 +10,9 @@
   stage: unit_tests_python
   script:
     - echo 'Running unit tests...'
+    - ls ${FEDDART_CI_BUILD_DIR}/meta/
+    - ls ${FEDDART_CI_BUILD_DIR}/meta/ci/
+    - ls ${FEDDART_CI_BUILD_DIR}/meta/ci/tests
     - cd ${FEDDART_CI_BUILD_DIR}/unittests
     - ./run-all.sh
 
