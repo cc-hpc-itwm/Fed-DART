@@ -10,6 +10,8 @@
   stage: unit_tests_python
   script:
     - echo 'Running unit tests...'
+    - cd ${FEDDART_CI_BUILD_DIR}/unittests
+    - ./run-all.sh
 
 .feddart_devicelist_run_integration_tests:
   extends:
