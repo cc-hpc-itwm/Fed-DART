@@ -12,7 +12,7 @@
     - echo 'Running unit tests...'
     - ls ${FEDDART_CI_DIR}
     - ls ${FEDDART_CI_DIR}/tests
-    - cd ${FEDDART_CI_DIR}tests/unittests
+    - cd ${FEDDART_CI_DIR}/tests/unittests
     - ./run-all.sh
 
 .feddart_devicelist_run_integration_tests:
