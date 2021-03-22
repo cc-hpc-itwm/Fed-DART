@@ -10,9 +10,8 @@
   stage: unit_tests_python
   script:
     - echo 'Running unit tests...'
-    - ls ${FEDDART_CI_DIR}
-    - ls ${FEDDART_CI_DIR}/tests
     - cd ${FEDDART_CI_DIR}/tests/unittests
+    - conda activate fed_dart_env
     - ./run-all.sh
 
 .feddart_devicelist_run_integration_tests:
