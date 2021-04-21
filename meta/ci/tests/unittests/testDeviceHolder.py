@@ -4,6 +4,9 @@ import sys
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
+parentdir = os.path.dirname(parentdir)
+parentdir = os.path.dirname(parentdir)
+parentdir = os.path.dirname(parentdir)
 sys.path.insert(0,parentdir)
 from feddart.deviceSingle import DeviceSingle
 from feddart.deviceHolder import DeviceHolder
@@ -54,11 +57,9 @@ class TestDeviceSingle(unittest.TestCase):
     def testAddDevice(self):
         "Add devices to deviceHolder. If deviceHolder is full throw an exception"
         maxSize = 3
-        deviceHolder = DeviceHolder( maxSize
-                                   , [ self.deviceOne
-                                     , self.deviceTwo
-                                     ]
-                                   )
+        deviceHolder = DeviceHolder(maxSize)
+        deviceHolder.addDevice(self.deviceOne, "hello_world", {"hello": "world"})
+        deviceHolder.addDevice(self.deviceTwo, "hello_world", {"hello": "world"})
         name = "device_three"
         if TEST_MODE:
             ipAdress = "client3"
@@ -78,23 +79,21 @@ class TestDeviceSingle(unittest.TestCase):
                                   , taskDict = taskDict
                                   , initTask = initTask
                                   )
-        deviceHolder.addDevice(deviceThree)
+        deviceHolder.addDevice(deviceThree, "hello_world", {"hello": "world"})
         self.assertEqual( ['device_one', 'device_two', 'device_three']
                         , deviceHolder.deviceNames
                         , msg = "Wrong names for devices"
                         )
         with self.assertRaises(Exception) as context:
-            deviceHolder.addDevice(deviceThree)
+            deviceHolder.addDevice(deviceThree, "hello_world", {"hello": "world"})
         self.assertTrue("DeviceHolder already full!" in str(context.exception))
     
     def testRemoveDevice(self):
         "Remove Device from deviceHolder"
         maxSize = 3
-        deviceHolder = DeviceHolder( maxSize
-                                   , [ self.deviceOne
-                                     , self.deviceTwo
-                                     ]
-                                   )
+        deviceHolder = DeviceHolder(maxSize)
+        deviceHolder.addDevice(self.deviceOne, "hello_world", {"hello": "world"})
+        deviceHolder.addDevice(self.deviceTwo, "hello_world", {"hello": "world"})
         deviceHolder.removeDevice(self.deviceOne)
         self.assertEqual( ['device_two']
                         , deviceHolder.deviceNames
@@ -117,14 +116,11 @@ class TestDeviceSingle(unittest.TestCase):
                                  , "test" #function
                                  , configFile
                                  )
-        deviceHolder = DeviceHolder( maxSize
-                                   , [ self.deviceOne
-                                     , self.deviceTwo
-                                     ]
-                                   )
-        with self.assertRaises(Exception) as context:
-            deviceHolder.broadcastTask(task)
-        self.assertTrue("Add the task" in str(context.exception))
+        deviceHolder = DeviceHolder(maxSize)
+        taskName = task.taskName 
+        parameterDict = task.parameterDict
+        deviceHolder.addDevice(self.deviceOne, taskName, parameterDict)
+        deviceHolder.addDevice(self.deviceTwo, taskName, parameterDict)
         self.dartRuntime.addSingleDevice( self.deviceOne.name
                                         , self.deviceOne.ipAdress
                                         , self.deviceOne.port 
@@ -137,8 +133,6 @@ class TestDeviceSingle(unittest.TestCase):
                                         , self.deviceTwo.hardwareConfig
                                         , self.deviceTwo.initTask
                                         )
-        self.deviceOne.addTask(task.taskName, task.parameterDict)
-        self.deviceTwo.addTask(task.taskName, task.parameterDict)
         deviceHolder.broadcastTask(task)
     
     def testStopTask(self):
@@ -158,10 +152,9 @@ class TestDeviceSingle(unittest.TestCase):
                                  , configFile
                                  )
         deviceHolder = DeviceHolder( maxSize
-                                   , [ self.deviceOne
-                                     , self.deviceTwo
-                                     ]
                                    )
+        deviceHolder.addDevice(self.deviceOne, task.taskName, task.parameterDict)
+        deviceHolder.addDevice(self.deviceTwo, task.taskName, task.parameterDict)
         self.dartRuntime.addSingleDevice( self.deviceOne.name
                                         , self.deviceOne.ipAdress
                                         , self.deviceOne.port 
@@ -174,14 +167,12 @@ class TestDeviceSingle(unittest.TestCase):
                                         , self.deviceTwo.hardwareConfig
                                         , self.deviceTwo.initTask
                                         )
-        self.deviceOne.addTask(task.taskName, task.parameterDict)
-        self.deviceTwo.addTask(task.taskName, task.parameterDict)
         deviceHolder.broadcastTask(task)
         self.assertEqual( {'task_one': {'param1': 5, 'param2': 1}}
                         , self.deviceOne._openTaskDict
                         , msg = "Wrong entries for openTaskDict"
                         )
-        deviceHolder.stopTask(task)
+        deviceHolder.stopTask(task.taskName)
         self.assertEqual( {}
                         , self.deviceOne._openTaskDict
                         , msg = "Wrong entries for openTaskDict"
@@ -204,11 +195,7 @@ class TestDeviceSingle(unittest.TestCase):
                                  , "test" #function
                                  , configFile
                                  )
-        deviceHolder = DeviceHolder( maxSize
-                                   , [ self.deviceOne
-                                     , self.deviceTwo
-                                     ]
-                                   )
+        deviceHolder = DeviceHolder(maxSize)
         self.dartRuntime.addSingleDevice( self.deviceOne.name
                                         , self.deviceOne.ipAdress
                                         , self.deviceOne.port 
@@ -221,8 +208,8 @@ class TestDeviceSingle(unittest.TestCase):
                                         , self.deviceTwo.hardwareConfig
                                         , self.deviceTwo.initTask
                                         )
-        self.deviceOne.addTask(task.taskName, task.parameterDict)
-        self.deviceTwo.addTask(task.taskName, parameterDict2)
+        deviceHolder.addDevice(self.deviceOne, task.taskName, task.parameterDict)
+        deviceHolder.addDevice(self.deviceTwo, task.taskName, parameterDict2)
         deviceHolder.broadcastTask(task)
         self.assertEqual( deviceHolder.get_finishedTasks(taskName)[0].resultDict
                         , {'result_0': 6 } 
@@ -243,26 +230,25 @@ class TestDeviceSingle(unittest.TestCase):
         taskParameter = {"param1": "hello", "param2": "world"}
         maxSize = 3
         deviceHolder = DeviceHolder( maxSize
-                                   , [ self.deviceOne
-                                     , self.deviceTwo
-                                     ]
+            
                                    )
+        deviceHolder._deviceList = [ self.deviceOne, self.deviceTwo]
         taskResult = { 'duration': 5
                      , 'result': {'result_0': 10, 'result_1': None}
                      }
         self.deviceOne._openTaskDict = { taskName: taskParameter}
         self.deviceTwo._openTaskDict = { taskName: taskParameter}
-        self.assertTrue( deviceHolder.get_taskStatus(taskName) == "in progress"
-                       , msg = "task should be in progress"
+        self.assertTrue( deviceHolder.devicesFinished(taskName) == False
+                       , msg = "task shouldn't be finished"
                        )
         self.deviceOne._finishedTaskDict = { taskName: taskResult}
         self.deviceOne._openTaskDict = {}
-        self.assertTrue( deviceHolder.get_taskStatus(taskName) == "in progress"
-                       , msg = "task should be in progress"
+        self.assertTrue( deviceHolder.devicesFinished(taskName) == False
+                       , msg = "task shouldn't be finished"
                        )
         self.deviceTwo._finishedTaskDict = { taskName: taskResult}
         self.deviceTwo._openTaskDict = {}
-        self.assertTrue( deviceHolder.get_taskStatus(taskName) == "finished"
+        self.assertTrue( deviceHolder.devicesFinished(taskName) == True
                        , msg = "task should be finished"
                        )
     
@@ -272,24 +258,21 @@ class TestDeviceSingle(unittest.TestCase):
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
         maxSize = 3
-        deviceHolder = DeviceHolder( maxSize
-                                   , [ self.deviceOne
-                                     , self.deviceTwo
-                                     ]
-                                   )
+        deviceHolder = DeviceHolder(maxSize)
+        deviceHolder._deviceList = [ self.deviceOne, self.deviceTwo]
         taskResult = { 'duration': 5
                      , 'result': {'result_0': 10, 'result_1': None}
                      }
         self.deviceOne._openTaskDict = { taskName: taskParameter}
         self.deviceTwo._openTaskDict = { taskName: taskParameter}
-        self.assertTrue( deviceHolder.get_taskProgress(taskName) == (0, 2)
+        self.assertTrue( deviceHolder.get_taskProgress(taskName) == 0
                        , msg = "wrong task progress"
                        )
         self.deviceOne._finishedTaskDict = { taskName: taskResult}
         self.deviceOne._openTaskDict = {}
         self.deviceTwo._finishedTaskDict = { taskName: taskResult}
         self.deviceTwo._openTaskDict = {}
-        self.assertTrue( deviceHolder.get_taskProgress(taskName) == (2, 2)
+        self.assertTrue( deviceHolder.get_taskProgress(taskName) == 2
                        , msg = "wrong task progress"
                        )
 

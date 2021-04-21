@@ -1,5 +1,6 @@
 from feddart.abstractDevice import AbstractDeviceBase
 from feddart.taskResult import TaskResult
+
 class DeviceSingle(AbstractDeviceBase):
     """!
     DeviceSingle is the interface to the real pyhsical device.

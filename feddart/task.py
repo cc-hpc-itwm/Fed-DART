@@ -1,12 +1,6 @@
-## 
-# @file task.py
-# @brief 
-#    
-#
-
 import abc
 
-class TaskBase:
+class TaskBase(abc.ABC):
     """!
     TaskBase is the meta class for all different task instances.
     Use this class to create a new task category. Tasks know their
@@ -26,12 +20,10 @@ class TaskBase:
     specificParameterTask:
 
     """
-    __metaclass__ = abc.ABCMeta
-
     
     @property
     @abc.abstractmethod
-    def parameterlists(self):
+    def parameterDict(self):
         """!
         property: parameterlists. Implements the getter.
 
@@ -39,34 +31,13 @@ class TaskBase:
         """
         return 
 
-    @parameterlists.setter
+    @parameterDict.setter
     @abc.abstractmethod
-    def parameterlists(self, new_parameterlist):
+    def parameterDict(self, newParameterDict):
         """!
         property: parameterlists. Implements the setter.
 
         @param new_parameterlist the new list of parameters
-        """
-        return
-
-    @property
-    @abc.abstractmethod
-    def hardwareRequirements(self):
-        """!
-        property: hardwareRequirements. Implements the getter.
-
-        Hardware requirements define the (optional) mandatory requirements for the devices.
-        @todo: define the format of hardware requirements
-        """
-        return 
-
-    @hardwareRequirements.setter
-    @abc.abstractmethod
-    def hardwareRequirements(self, new_hardwareRequirements):
-        """!
-        property: hardwareRequirements. Implements the setter.
-
-        @param new_hardwareRequirements the new mandatory hardware requirements
         """
         return
 
@@ -88,29 +59,6 @@ class TaskBase:
         property: taskName. Implements the setter.
 
         @param new_taskName the new name of the task
-        """
-        return
-
-    @property
-    @abc.abstractmethod
-    def model(self):
-        """!
-        property: model. Implements the getter.
-
-        A model is an optional parameter for a task. In case a model is provided,
-        the model is sent to the devices where it will be trained/used for inference.
-        In case no model is provided, the task executes some given functions on 
-        the device.
-        """
-        return 
-        
-    @model.setter
-    @abc.abstractmethod
-    def model(self, new_model):
-        """!
-        property: model. Implements the setter.
-
-        @param new_model the new model to be used
         """
         return
 

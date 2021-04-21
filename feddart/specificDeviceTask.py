@@ -58,7 +58,7 @@ class SpecificDeviceTask(TaskBase):
         """!
         property: parameterDict. Implements the getter.
 
-        @return format {"device_name": parameterList}      
+        @return format {"device_name": deviceParameterDict}      
         """
         return self._parameterDict
 
@@ -161,7 +161,13 @@ class SpecificDeviceTask(TaskBase):
                             , config['filePath'] )
 
         return valid
-
+    
+    def getDeviceParameterDict(self, deviceName):
+        if deviceName not in self.specificDevices:
+            raise KeyError("Device with name" + deviceName + " not included in task")
+        else:
+            return self.parameterDict[deviceName]
+            
     def checkConstraints(self, listDevices):
         """!
         Check if all devices, which are specified by name in the task are in 

@@ -4,13 +4,14 @@ from feddart.specificDeviceTask import SpecificDeviceTask
 from feddart.initTask import InitTask
 import json
 import time
-DEMO = True
+
 
 class WorkflowManager:
     
     TASK_STATUS_IN_PROGRESS = "in progess"
     TASK_STATUS_IN_QUEUE = "in queue"
     TASK_STATUS_FINISHED = "finished"
+
     def __init__( self
                 , testMode = False
                 , errorProbability = 0
@@ -98,18 +99,20 @@ class WorkflowManager:
         @return string "in queue", "in progress" or "finished"
         """
         if self.selector.taskInQueue(taskName):
-            return "in queue"
+            return self.TASK_STATUS_IN_QUEUE
         else:
             aggregator = self.selector.get_aggregator_of_task(taskName)
-            taskStatus = aggregator.get_TaskStatus()
-            return taskStatus
+            taskFinished = aggregator.isTaskFinished()
+            if taskFinished:
+                return self.TASK_STATUS_FINISHED
+            else:
+                return self.TASK_STATUS_IN_PROGRESS
 
     def getServerInformation(self):
         return self.selector.runtime.get_ServerInformation()
 
     def getTaskResult( self
                      , taskName
-                     , boolean_aggregate = False
                      ):
         """!
         Get the aggregator of the task and trigger the 
@@ -120,9 +123,15 @@ class WorkflowManager:
 
         @return taskResult aggregated result or collected results from devices
         """
-        aggregator = self.selector.get_aggregator_of_task(taskName)
-        taskResult = aggregator.requestAggregation(boolean_aggregate)
-        return taskResult 
+        if self.selector.taskInQueue(taskName):
+            return []
+        else:
+            aggregator = self.selector.get_aggregator_of_task(taskName)
+            taskResult = aggregator.requestAggregation()
+            if self.getTaskStatus(taskName) == self.TASK_STATUS_FINISHED:
+                if not self._testMode:
+                    self.stopTask(taskName)
+            return taskResult 
 
     def getAllDeviceNames(self):
         """!
@@ -134,16 +143,15 @@ class WorkflowManager:
 
     def stopTask(self, taskName):
         """!
-        The task with the associated aggregator and deviceHolders is destroyes
+        The task with the associated aggregator and deviceHolders is destroyed
         Should be done, when the task isn't needed anymore.
         @todo: add it as option to get_TaskResult ?!
         """
-        #check if task in queue
-        aggregator = self.selector.get_aggregator_of_task(taskName)
-        aggregator.stopTask()
-        self.selector.deleteAggregator(aggregator)
-        self.selector.addTasks2Runtime()
-
+        if self.selector.taskInQueue(taskName):
+            self.selector.deleteTaskInQueue(taskName)
+        else:
+            self.selector.deleteAggregatorAndTask(taskName)
+            
     def stopFedDART(self):
         self.runtime.stopRuntime()
     
@@ -204,12 +212,7 @@ class WorkflowManager:
         
         #task accepted
         if request_status:
-            # add task to queue
-            self.selector.addTask2Queue(task, priority) #order at end 
-                #order at beginning
-            #in a first step we start the task directly
-            #start task here ?! try to start, can be the case that some devices are blocked
-
+            self.selector.addTask2Queue(task, priority)
             print("task accepted")
         # task rejected
         else: 

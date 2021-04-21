@@ -168,13 +168,6 @@ class DartRuntime:
         resultDevice, resultID = self._messageTranslator.convertDart2Python(taskResult, deviceName)
         return resultDevice, resultID
 
-    def restartSelector(self):
-        """!
-        Restart selector after failure
-        """
-        raise NotImplementedError("Not implemented yet")
-        print('Selector restart triggered...')
-    
     def instantiateSelector(self, max_size_deviceHolder):
         """!
         Create the Selector after starting the runtime
