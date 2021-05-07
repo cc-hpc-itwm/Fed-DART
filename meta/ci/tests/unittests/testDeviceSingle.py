@@ -1,46 +1,56 @@
 import unittest
 import os
 import sys
-from DummyRuntime import DummyDARTRuntime
-d = os.path.dirname(os.getcwd())
-sys.path.append(d + '/src')
-from deviceSingle import DeviceSingle
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+parentdir = os.path.dirname(parentdir)
+parentdir = os.path.dirname(parentdir)
+parentdir = os.path.dirname(parentdir)
+sys.path.insert(0, parentdir) 
+from feddart.deviceSingle import DeviceSingle
+from feddart.dartRuntime import DartRuntime
+from feddart.specificDeviceTask import SpecificDeviceTask
+from feddart.initTask import InitTask
 
-class DummyTask:
+TEST_MODE = True
+ERROR_PROBABILITY = 0
 
-    def __init__( self
-                , taskName
-                , filePath
-                , executeFunction
-                ):
-        self.taskName = taskName
-        self.filePath = filePath
-        self.executeFunction = executeFunction
-
-   
 class TestDeviceSingle(unittest.TestCase):
 
     def setUp(self):
-        boolean_random = False
+        server = "https://127.0.0.0.1:7777"
+        client_key = "000"
         name = "device_one"
-        ipAdress = "123.456"
-        dartRuntime = DummyDARTRuntime(boolean_random)
+        if TEST_MODE:
+            ipAdress = "client1"
+        else:
+            ipAdress = "127.0.0.1"
+        self.dartRuntime = DartRuntime( server
+                                      , client_key
+                                      , TEST_MODE
+                                      , ERROR_PROBABILITY
+                                      )
         physicalName = None
         hardwareConfig = None
         taskDict = {}
-        self.deviceSingle = DeviceSingle( name
-                                        , ipAdress
-                                        , dartRuntime
-                                        , physicalName
-                                        , hardwareConfig
-                                        , taskDict
+        initTask = None
+        port = 2883
+        self.deviceSingle = DeviceSingle( name = name
+                                        , ipAdress = ipAdress
+                                        , port = port
+                                        , dartRuntime = self.dartRuntime
+                                        , physicalName = physicalName
+                                        , hardwareConfig = hardwareConfig
+                                        , taskDict = taskDict
+                                        , initTask = initTask
                                         )
-        
+      
     def tearDown(self):
         pass
-
+    
     def testAddTask(self):
-        """Add tasks to openTaskDict. If task is already existing through an exception"""
+        "Add tasks to openTaskDict. If task is already existing through an exception"
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
         self.deviceSingle.addTask(taskName, taskParameter)
@@ -62,9 +72,9 @@ class TestDeviceSingle(unittest.TestCase):
                           }
                         , msg = "Wrong dict entries for openTaskDict"
                         )
-
+    
     def testAddFinishedTask(self):
-        """Add tasks to finishedTaskDict. If task is already existing through an exception"""
+        "Add tasks to finishedTaskDict. If task is already existing through an exception"
         taskName = "task_one"
         taskResult = { 'duration': 5
                      , 'result': {'result_0': 10, 'result_1': None}
@@ -86,9 +96,9 @@ class TestDeviceSingle(unittest.TestCase):
                           }
                         , msg = "Wrong dict entries for finishedTaskDict"
                         )
-
+    
     def testisOpenTask(self):
-        """Check if taskName is in openTaskDict"""
+        "Check if taskName is in openTaskDict"
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
         self.deviceSingle.addTask(taskName, taskParameter)
@@ -99,8 +109,9 @@ class TestDeviceSingle(unittest.TestCase):
                        , msg = "Task should be not an open task"
                        )
 
+    
     def testRemoveOpenTask(self):
-        """Try to remove tasks from openTaskDict"""
+        "Try to remove tasks from openTaskDict"
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
         self.deviceSingle.addTask(taskName, taskParameter)
@@ -116,7 +127,7 @@ class TestDeviceSingle(unittest.TestCase):
                         )
 
     def testGetOpenTaskParameter(self):
-        """Get the parameter of an open task"""
+        "Get the parameter of an open task"
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
         self.deviceSingle.addTask(taskName, taskParameter)
@@ -127,9 +138,9 @@ class TestDeviceSingle(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             self.deviceSingle.getOpenTaskParameter("task_twp")
         self.assertTrue("Open task with name" in str(context.exception))
-
+    
     def testGetFinishedTaskResult(self):
-        """Get the result of a finished task"""
+        "Get the result of a finished task"
         taskName = "task_one"
         taskResult = { 'duration': 5
                      , 'result': {'result_0': 10, 'result_1': None}
@@ -144,7 +155,7 @@ class TestDeviceSingle(unittest.TestCase):
         self.assertTrue("Finished task with name" in str(context.exception))
 
     def testHasTask(self):
-        """Check if the device has a task with such an name in open or finished tasks"""
+        "Check if the device has a task with such an name in open or finished tasks"
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
         self.deviceSingle.addTask(taskName, taskParameter)
@@ -162,49 +173,86 @@ class TestDeviceSingle(unittest.TestCase):
         self.assertTrue( self.deviceSingle.hasTask("task_three") == False
                        , msg = "Device should not have task"
                        )
+    
+    def testInitTask(self):
+        "Check if the init task is executed"
+        taskName = "task_one"
+        parameterDict = {"bool_string": "True"}
+        model = None
+        hardwareRequirements = {}
+        configFile = None
+        task = InitTask( parameterDict
+                       , model
+                       , hardwareRequirements
+                       , "test" #filename
+                       , "init" #function
+                       , configFile
+                       )
+        self.assertTrue( self.deviceSingle.initialized == True
+                       , msg = "Device should be initialized"
+                       )
+        self.deviceSingle._initialized = False
+        self.deviceSingle.initTask = task
+        self.dartRuntime.addSingleDevice( self.deviceSingle.name
+                                        , self.deviceSingle.ipAdress
+                                        , self.deviceSingle.port 
+                                        , self.deviceSingle.hardwareConfig
+                                        , self.deviceSingle.initTask
+                                        )
+        # addSingleDevice creates a new instance of deviceSingle, therefore
+        # it must be explicitly add to self.deviceSingle afterwards 
+        self.deviceSingle.addTask(task.taskName, task.parameterDict)
+        self.deviceSingle.startTask(task)
+        self.assertTrue( self.deviceSingle.initialized
+                       , msg = "Device should be initialized"
+                       )
 
     def testStartTask(self):
-        """Check starting a task. A task must be added before we can start the task"""
-        boolean_random = True
-        name = "device_one"
-        ipAdress = "123.456"
-        dartRuntime = DummyDARTRuntime(boolean_random)
-        physicalName = None
-        hardwareConfig = None
-        taskDict = {}
-        deviceSingle = DeviceSingle( name
-                                   , ipAdress
-                                   , dartRuntime
-                                   , physicalName
-                                   , hardwareConfig
-                                   , taskDict
-                                   )
-        task = DummyTask("task_one", "C/hello", "hello_world")
+        "Check starting a task. A task must be added before we can start the task"
         taskName = "task_one"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        deviceSingle.addTask(taskName, taskParameter)
-        deviceSingle.startTask(task)
-        task_two = DummyTask("task_two", "C/hello", "hello_world")
+        parameterDict = {"param1": 5, "param2": 3}
+        model = None
+        hardwareRequirements = {}
+        configFile = None
+        task = SpecificDeviceTask( taskName
+                                 , parameterDict
+                                 , model
+                                 , hardwareRequirements
+                                 , "test" #filename
+                                 , "test" #function
+                                 , configFile
+                                 )
+        self.dartRuntime.addSingleDevice( self.deviceSingle.name
+                                        , self.deviceSingle.ipAdress
+                                        , self.deviceSingle.port 
+                                        , self.deviceSingle.hardwareConfig
+                                        , self.deviceSingle.initTask
+                                        )
+        self.deviceSingle.addTask(task.taskName, task.parameterDict)
+        self.deviceSingle.startTask(task)
+        taskName = "task_two"
+        task_two = SpecificDeviceTask( taskName
+                                     , parameterDict
+                                     , model
+                                     , hardwareRequirements
+                                     , "test" #filename
+                                     , "test" #function
+                                     , configFile
+                                     )
         with self.assertRaises(Exception) as context:
             self.deviceSingle.startTask(task_two)
         self.assertTrue("Add the task" in str(context.exception))
 
     def testGetTaskResult(self):
-        """Try to get results from valid and unvalid task names"""
+        "Try to get results from valid and unvalid task names"
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
-        self.deviceSingle.addTask(taskName, taskParameter)
-        taskName = "task_two"
         taskResult = { 'duration': 5
                      , 'result': {'result_0': 10, 'result_1': None}
                      }
         self.deviceSingle._addFinishedTask(taskName, taskResult)
         self.assertEqual( self.deviceSingle.get_taskResult("task_one")
-                        , {'duration': 5, 'result': {'result_0': 1, 'result_1': 'hello'}}
-                        , msg = "Wrong results for task!"
-                        )
-        self.assertEqual( self.deviceSingle.get_taskResult("task_two")
-                        , taskResult
+                        , {'duration': 5, 'result': {'result_0': 10, 'result_1': None}}
                         , msg = "Wrong results for task!"
                         )
         with self.assertRaises(Exception) as context:
@@ -215,32 +263,59 @@ class TestDeviceSingle(unittest.TestCase):
                         , msg = "No open task!"
                         )
         self.assertEqual( self.deviceSingle.finishedTaskDict
-                        , { 'task_two': {'duration': 5, 'result': {'result_0': 10, 'result_1': None}}
-                          , 'task_one': {'duration': 5, 'result': {'result_0': 1, 'result_1': 'hello'}}
-                          }
+                        , { 'task_one': {'duration': 5, 'result': {'result_0': 10, 'result_1': None}}}
                         , msg = "wrong finished tasks!"
                         )
+
+    def testChangefromOpentoFinishedTask(self):
+        "Check if a finished task is removed from the openTaskDict"
+        taskName = "task_one"
+        parameterDict = {"param1": 5, "param2": 3}
+        model = None
+        hardwareRequirements = {}
+        configFile = None
+        task = SpecificDeviceTask( taskName
+                                 , parameterDict
+                                 , model
+                                 , hardwareRequirements
+                                 , "test" #filename
+                                 , "test" #function
+                                 , configFile
+                                 )
+        self.dartRuntime.addSingleDevice( self.deviceSingle.name
+                                        , self.deviceSingle.ipAdress
+                                        , self.deviceSingle.port 
+                                        , self.deviceSingle.hardwareConfig
+                                        , self.deviceSingle.initTask
+                                        )
+        self.deviceSingle.addTask(task.taskName, task.parameterDict)
+        self.deviceSingle.startTask(task)
+        self.deviceSingle.get_taskResult(taskName)
+        self.assertEqual( self.deviceSingle.openTaskDict
+                        , {}
+                        , msg = "No open task!"
+                        )
         
+       
     def testHasTaskResult(self):
-        """Check the results from valid and unvalid task names"""
+        "Check the results from valid and unvalid task names"
         taskName = "task_one"
         taskParameter = {"param1": "hello", "param2": "world"}
         self.deviceSingle.addTask(taskName, taskParameter)
-        taskName = "task_two"
         taskResult = { 'duration': 5
                      , 'result': {'result_0': 10, 'result_1': None}
                      }
-        self.deviceSingle._addFinishedTask(taskName, taskResult)
-        self.assertTrue( self.deviceSingle.has_taskResult("task_one") == True
+        self.assertTrue( self.deviceSingle.has_taskResult("task_one") == False
                        , msg = "There should be a result from the task!"
                        )
-        self.assertTrue( self.deviceSingle.has_taskResult("task_two") == True
+        self.deviceSingle._addFinishedTask(taskName, taskResult)
+        self.assertTrue( self.deviceSingle.has_taskResult("task_one") == True
                        , msg = "There should be a result from the task!"
                        )
         with self.assertRaises(Exception) as context:
             self.deviceSingle.has_taskResult("hello")
         self.assertTrue("No task with name" in str(context.exception))
-        
+    
         
 if __name__ == '__main__':
     unittest.main(verbosity = 2)

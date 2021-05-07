@@ -71,13 +71,8 @@ class AggregatorBase(abc.ABC):
     def allDevices(self):
         return None
     
-
     @abc.abstractmethod
-    def addAggregator(self, newAggregator):
-        raise NotImplementedError("Subclasses should implement this!")
-
-    @abc.abstractmethod
-    def get_TaskStatus(self):
+    def isTaskFinished(self):
         raise NotImplementedError("Subclasses should implement this!")
 
     @abc.abstractmethod
@@ -89,7 +84,7 @@ class AggregatorBase(abc.ABC):
         raise NotImplementedError("Subclasses should implement this!")
         
     @abc.abstractmethod
-    def instantiateDeviceHolders(self):
+    def _instantiateDeviceHolders(self):
         raise NotImplementedError("Subclasses should implement this!")
 
     @abc.abstractmethod
@@ -97,11 +92,7 @@ class AggregatorBase(abc.ABC):
         raise NotImplementedError("Subclasses should implement this!")
         
     @abc.abstractmethod
-    def restartSelector(self):
-        raise NotImplementedError("Subclasses should implement this!")  
-
-    @abc.abstractmethod
-    def broadcastTaskToDevices(self):
+    def sendTask(self):
         raise NotImplementedError("Subclasses should implement this!")  
 
     @abc.abstractmethod

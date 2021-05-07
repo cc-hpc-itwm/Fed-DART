@@ -196,6 +196,7 @@ class dummyClient:
         for job in self.job_list:
             if job.name == jobName:
                return job
+        return None
 	
     def stop_servers(self):
         if random.uniform(0,1) < self.probability_error:
@@ -317,11 +318,17 @@ class dummyClient:
         @param jobName string with job name
         @param amount int of amount of results. Ignored at the moment
         @param worker_regex ignored at the moment
+
+        @return dict of job result or dummy dict if there is no job with such a name
         """
         rightJob = self.getJob(jobName)
         if random.uniform(0, 1) < self.probability_error:
             raise Exception('response not ok')
-        return rightJob.resultDict
+        if rightJob:
+            return rightJob.resultDict
+        else:
+            print("no such an job is running on server")
+            return {'results': [], 'job':{}}
 	
     def delete_job_result(self, jobName, resultID):
         """!

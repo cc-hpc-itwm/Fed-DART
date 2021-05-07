@@ -10,6 +10,9 @@
   stage: unit_tests_python
   script:
     - echo 'Running unit tests...'
+    - cd ${FEDDART_CI_DIR}/tests/unittests
+    - conda activate fed_dart_env
+    - ./run-all.sh
 
 .feddart_devicelist_run_integration_tests:
   extends:
@@ -22,7 +25,7 @@
 default_tests:
   extends:
     - .feddart_devicelist_run_tests
-    - .feddart_devicelist_run_integration_tests
+    #- .feddart_devicelist_run_integration_tests
   needs:
     - job: default_build
   

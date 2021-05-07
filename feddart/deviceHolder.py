@@ -7,18 +7,17 @@ class DeviceHolder():
     Every access to device, which are associated to the deviceaggregator, 
     must go over the device holder.
     """ 
+    
     def __init__( self
                 , maxSize = 1
-                , deviceList = []
                 ):
         """!
         @param maxSize maximal amount of devices for device holder
         @param deviceList list of associated devices
         """
-        if len(deviceList) > maxSize:
-            raise ValueError("More than allowed devices")
-        self._deviceList = deviceList
+        self._deviceList = []
         self._maxSize = maxSize
+        self._devicesFinished = False
 
     @property
     def maxSize(self):
@@ -50,15 +49,18 @@ class DeviceHolder():
         """
         self._deviceList = newDevices
 
-    def addDevice(self, newDevice):
+    def addDevice(self, newDevice, taskName, deviceParameterDict):
         """!
-        Add a single device to device list.
+        Add a single device to device list and add task to this specific device
         @param newDevice instance of device
+        @param tasName string with task name
+        @param deviceParameterDict dict of format like {"arg1: 5, "arg2": 10}
         """
         if self.check_full():
             raise ValueError("DeviceHolder already full!")
         devices = self.devices
         devices = devices + [newDevice]
+        newDevice.addTask(taskName, deviceParameterDict)
         self.devices = devices
 
     def removeDevice(self, device):
@@ -87,7 +89,7 @@ class DeviceHolder():
         else:
             return False
 
-    def stopTask(self, task):
+    def stopTask(self, taskName):
         """!
         Stop the task on each device from the deviceHolder.
         Remove the task from each device open task dict
@@ -97,11 +99,10 @@ class DeviceHolder():
         """
         if self.check_empty() == False:
             runtime = self.getRuntime()
-            taskName = task.taskName
             for device in self.devices:
                 if device.isOpenTask(taskName):
                     device.removeOpenTask(taskName)
-            runtime.stopTask(task.taskName)
+            runtime.stopTask(taskName)
 
     def getRuntime(self):
         """!
@@ -137,26 +138,27 @@ class DeviceHolder():
         list_deviceParameter = []
         taskName = task.taskName
         for device in self.devices:
-            if device.hasTask(taskName):
-                list_deviceNames.append(device.name)
-                list_deviceParameter.append(device.getOpenTaskParameter(taskName))
-            else:
-                raise ValueError("Add the task " + taskName + " to device " + device.name +  " before starting the task!")
+            list_deviceNames.append(device.name)
+            list_deviceParameter.append(device.getOpenTaskParameter(taskName))
         runtime.broadcastTaskToDevices( taskName
                                       , list_deviceNames
                                       , list_deviceParameter
                                       )
-        
-    def syncTask(self, task):
+
+    def devicesFinished(self, taskName):
         """!
-        Send the task at the same time to all devices
-        in deviceList. With sync we only update parameters 
-        on the physical device, we don't expect a return.
-        @param task instance of class task
-        
-        @todo this function can be used for the init task ?!
+        Check how many devices have already finished the task
+        and compare it againts the total number of devices.
+
+        @param string with task name
+        @return self._devicesFinished boolean
         """
-        raise NotImplementedError("not implemented yet")
+        if self._devicesFinished == False:
+            maximal_finished_tasks = len(self._deviceList)
+            number_finished_tasks = self.get_taskProgress(taskName)
+            if number_finished_tasks == maximal_finished_tasks:
+                self._devicesFinished = True
+        return self._devicesFinished
 
     def get_OnlineDevices(self):
         """!
@@ -171,16 +173,7 @@ class DeviceHolder():
             if device.is_online() == True:
                 onlineDevices.append(device)
         return onlineDevices
-
-    def getFirstOnlineDevice(self):
-        """!
-        Check, which devices are currently online. Return the first one 
-        from the list.
-        @return a currently online device
-        @todo there are smarter ways to get this information
-        """
-        return self.get_OnlineDevices()[0]
-        
+  
     def get_finishedTasks(self, taskName):
         """!
         Iterate over all devices and get the result from devices,
@@ -198,22 +191,6 @@ class DeviceHolder():
                 resultList.append(device_result)
         return resultList
         
-    def get_taskStatus(self, taskName):
-        """!
-        Get the number of already finished devices and total amount of devices.
-        If there are difference between these both values return "in progress" else
-        "finished"
-
-        @param taskName string of task name
-
-        @return string "in progress" or "finished"
-        """
-        number_finished_tasks, maximal_finished_tasks = self.get_taskProgress(taskName)
-        if number_finished_tasks < maximal_finished_tasks:
-            return "in progress"
-        else:
-            return "finished"
-
     def get_taskProgress(self, taskName):
         """!
         Iterate over all devices and get a flag from devices,
@@ -221,15 +198,10 @@ class DeviceHolder():
         @param taskName string of task name
 
         @return number_finished_tasks int number of finished devices
-        @return maximal_finished_tasks in total number of devices
         """
         number_finished_tasks = 0
-        maximal_finished_tasks = 0
+        # has the task, because we add a device with task name and parameters
         for device in self.devices:
-            if device.hasTask(taskName):
-                maximal_finished_tasks += 1
-                if device.has_taskResult(taskName):
-                    number_finished_tasks += 1
-        if maximal_finished_tasks == 0:
-            raise ValueError("No device has the task", taskName)
-        return number_finished_tasks, maximal_finished_tasks
+            if device.has_taskResult(taskName):
+                number_finished_tasks += 1
+        return number_finished_tasks

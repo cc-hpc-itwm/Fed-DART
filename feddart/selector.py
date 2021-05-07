@@ -8,18 +8,23 @@ class Selector():
     The Selector is responsible to shedule devices to the
     device holder based on (optional) hardware requirements.
     """
-
+    """!
+    @param _maxNumDeviceHolder maximal number of deviceHolders per aggregator/childaggregator
+    @param _maxNumChildAggregators maximal number of allowed childAggregators
+    """
+    _maxNumDeviceHolder = 2
+    _maxNumChildAggregators = 2
     
     def __init__( self
                 , runtime = None
-                , max_size_device_holder = -1 
+                , maxSizeDeviceHolder = -1 
                 , initTask = None
                 ):
         """!
         Instantiate a Selector (singleton).
 
         @param runtime The runtime for the connections to physical devices
-        @param max_size_device_holder Maximal amount of devices in a device holder
+        @param maxSizeDeviceHolder Maximal amount of devices in a device holder
         @param devices List of connected devices
         @param aggregators  List of aggregators
         @param device_holders List of device_holders
@@ -27,7 +32,7 @@ class Selector():
         @param initTask task which must be executed at each device firstly
         """
         self._runtime = runtime
-        self._max_size_device_holder = max_size_device_holder 
+        self._maxSizeDeviceHolder = maxSizeDeviceHolder 
         self._devices = self._runtime.registeredDevices
         self._aggregators = []
         self._device_holders = []
@@ -126,19 +131,20 @@ class Selector():
     @property
     def maximal_size_device_holder(self):
         """!
-        property: max_size_device_holder. Implements the getter
+        property: maxSizeDeviceHolder. Implements the getter
         """
-        return self._max_size_device_holder
+        return self._maxSizeDeviceHolder
 
     @maximal_size_device_holder.setter
     def maximal_size_device_holder(self, newSize):
         """!
-        property: max_size_device_holder. Implements the setter
+        property: maxSizeDeviceHolder. Implements the setter
 
         @param newSize new maximal number of allowd device holders.
         """
-        self._max_size_device_holder = newSize
+        self._maxSizeDeviceHolder = newSize
     
+#-------------- functions for device related aspects----------------------
     def send_initTask_to_newDevices(self, deviceList):
         """! In the case that a device has connected on their own we must send 
             the init task to them before sending another tasks.
@@ -154,7 +160,6 @@ class Selector():
                                        , deviceList = initializationDevices
                                        )
             deviceHolder.broadcastTask(self.initTask)
-        #check also if device has retuend true
 
     def addSingleDevice( self 
                        , deviceName
@@ -162,6 +167,14 @@ class Selector():
                        , port
                        , hardwareConfig
                        ):
+        """!
+        Add a single device to runtime
+
+        @param deviceName string with device name
+        @param ipAdress string with IP adress
+        @param port int with device port
+        @param hardwareConfig dict with devices hardware config
+        """               
         initTask = self.initTask
         self.runtime.addSingleDevice( deviceName
                                     , ipAdress
@@ -182,7 +195,35 @@ class Selector():
         else:
            raise ValueError("There is no device with name " + deviceName)
 
+    def requestTaskAcceptance(self, task):
+        """!
+        Decide if enough devices fullfil the hardware requirements
+        of the incoming task.
+        In a first step the selector determines the devices, which are currently available for computation.
+        In a second step the possible devices are checked from the task, if the fullfill the task criteria.
+        Based on this criteria accept or reject the task. 
+
+        @param task instance of task
+        
+        @return task_acceptance boolean 
+        """
+        initializedDevices = []
+        for device in self.devices:
+            if device.initialized:
+                initializedDevices.append(device)
+        task_acceptance = task.checkConstraints(initializedDevices)
+        return task_acceptance
+
+#------------functions for aggregator related aspects --------
     def get_aggregator_of_task(self, taskName):
+        """!
+        Iterate over all known aggregators to get the aggregator
+        of the specific task. Raise a ValueError if the aggregator
+        doesn't exist.
+
+        @param taskName string with task name
+        @return aggregator instance of Aggregator
+        """
         for aggregator in self.aggregators:
             if aggregator.task.taskName == taskName:
                 return aggregator
@@ -198,44 +239,58 @@ class Selector():
         aggregators = aggregators + [newAggregator]
         self.aggregators = aggregators
 
-    def removeAggregator(self, aggregator):
+    def deleteAggregatorAndTask(self, taskName):
         """!
-        Remove a aggregator from the aggregator list.
+        Get the aggregator of the task, stop the task on the DART-Server 
+        and remove the task from the open task dict on each device. Afterwards 
+        the aggregator is deleted and new tasks are uploaded to the DART-Server
+
+        @param taskName string with task name
+        """
+        aggregator = self.get_aggregator_of_task(taskName)
+        aggregator.stopTask()
+        self.deleteAggregator(aggregator)
+        self.addTasks2Runtime()
+
+    def deleteAggregator(self, aggregator):
+        """!
+        Remove a aggregator from the aggregator list and delete the aggregator.
 
         @param aggregator instance of aggregator
         """
         if aggregator in self.aggregators:
             self._aggregators.remove(aggregator)
+            del aggregator
         else:
             raise ValueError("aggregator is not in selector")
 
-    def requestTaskAcceptance(self, task):
+    def instantiateAggregator(self, task):
         """!
-        Decide if enough devices fullfil the hardware requirements
-        of the incoming task.
-        In a first step the selector determines the devices, which are currently available for computation.
-        In a second step the possible devices are checked from the task, if the fullfill the task criteria.
-        Based on this criteria accept or reject the task.
-
-        @param task instance of task
+        Instantiate DeviceAggregator. Check in create_needed_childAggregators
+        if the aggregator has enough capacity for the amount of Device,
+        if not create childAggregators recursively. Add task and devices
+        to aggregator
         
-        @return task_acceptance boolean 
+        @param numDevices amount of devices
         """
-        initializedDevices = []
-        for device in self.devices:
-            if device.initialized:
-                initializedDevices.append(device)
-        task_acceptance = task.checkConstraints(initializedDevices)
-        return task_acceptance
-    
-    def getDevicesForDeviceHolder(self, task):
+        choosen_devices = self.getDevicesForAggregator(task)
+        aggregator = DeviceAggregator( devices = choosen_devices
+                                     , task = task
+                                     , maxSizeDeviceHolder = self._maxSizeDeviceHolder
+                                     , maxNumDeviceHolder = self._maxNumDeviceHolder
+                                     , maxNumChildAggregators = self._maxNumChildAggregators
+                                     , logServer = None
+                                     )
+        print("max # devices in aggregator: ", aggregator.get_max_number_devices())
+        self.addAggregator(aggregator)
+        return aggregator
+        
+    def getDevicesForAggregator(self, task):
         """!
         Check which devices fullfill the requirements of the task
         and if they are available.
 
-        @param num_devices amount of needed devices
-        @param task instance of task
-        @todo: implement this functin 
+        @param task instance of task 
         """   
         #TODO: only implemented for specificDeviceTask
         if not self.devices:
@@ -243,7 +298,6 @@ class Selector():
 
         suitable_devices = []
         for device in self.devices:
-            #self..add_task_to_device(device, task)
             # add task to device if right if not nothing
             #TODO check if all specificDevices are in self.devices
             if device.name in task.specificDevices:
@@ -253,54 +307,34 @@ class Selector():
             raise ValueError("selector: no devices")
         else: 
             return suitable_devices      
-
-    def instantiateAggregator(self, numDevices):
-        """!
-        Instantiate DeviceAggregator. Check in create_needed_childAggregators
-        if the aggregator has enough capacity for the amount of Device,
-        if not create childAggregators recursively.
-        
-        @param numDevices amount of devices
-        """
-        aggregator = DeviceAggregator( task = None
-                                     , deviceHolders= []
-                                     , childAggregators= []
-                                     , maxSizeDeviceHolder= self._max_size_device_holder
-                                     , aggregatedResult = None
-                                     )
-        # get sufficient number of devices
-        aggregator.create_needed_childAggregators(numDevices)
-        print("max # devices in aggregator: ", aggregator.get_max_number_devices())
-        self.addAggregator(aggregator)
-        return aggregator
-        
-    def deleteAggregator(self, aggregator):
-        self.removeAggregator(aggregator)
-        del aggregator
-
-    def recoverDevices(self):
-        """!
-         In case of system failure we can restart the selector
-        with the known devices of the aggregators ->device_holders
-
-        @todo: implement this function
-        """
-        raise NotImplementedError("not implemented yet")
-
-    def requestDeviceHolderUpdate(self):
-        """!
-        @todo: for what do we need this function ? selector has
-        no device_holders
-        """
-        raise NotImplementedError("not implemented yet")
-
+    
+ #------------functions related to queue aspect---------------
     def taskInQueue(self, taskName):
+        """!
+        Check if task is in the task queue from selector.
+
+        @param taskName string with task name
+        @return booleanQueue boolean
+        """
         booleanQueue = False
         for task in self._taskQueue:
             if task.taskName == taskName:
                 booleanQueue = True
                 break
         return booleanQueue
+
+    def deleteTaskInQueue(self, taskName):
+        """!
+        Delete task from selectors task queue. Afterwards
+        check if the DART-Server has capabilities for new tasks.
+
+        @param taskName string with task name.
+        """
+        if self.taskInQueue(taskName):
+            for task in self._taskQueue:
+                if task.taskName == taskName:
+                    self._taskQueue.remove(task)
+        self.addTasks2Runtime()
             
     def addTask2Queue(self, task, priority = False):
         """!
@@ -320,19 +354,19 @@ class Selector():
         self.addTasks2Runtime()
 
     def addTasks2Runtime(self):
+        """!
+        Check if the DART-Server has capabilities to schedule new task.
+        Iterate over all task in the queue and check which task can be executed 
+        at the moment. If yes instantiate aggregator for task and remove task from 
+        queue
+        """
         capacitynewTasks = self.runtime.get_Capacity_for_newTasks()
         for task in self._taskQueue:
             if capacitynewTasks <= 0:
                 break
             if self.requestTaskAcceptance(task):
-                aggregator = self.instantiateAggregator(task.numDevices)
-                aggregator.task = task
-                choosen_devices = self.getDevicesForDeviceHolder(task) #here we already add task to device
-                aggregator.instantiateDeviceHolders()
-                for device in choosen_devices:
-                    aggregator.addSingleDevice(device) #add here task to devices
-                    device.addTask(task.taskName, task.parameterDict[device.name])
-                aggregator.broadcastTaskToDevices() 
+                aggregator = self.instantiateAggregator(task)
+                aggregator.sendTask() 
                 capacitynewTasks -= 1
-                self._taskQueue.remove(task)  
+                self.deleteTaskInQueue(task.taskName)  
                 
