@@ -70,15 +70,16 @@ class WorkflowManager:
             self._selector = self.runtime.instantiateSelector(self._maxSizeDeviceHolder)
         if self._initTask:
             self.selector.initTask = self._initTask
-        with open(deviceFile) as deviceFile:
-            deviceFile = json.load(deviceFile)
-            for deviceName in deviceFile:
-                self.selector.addSingleDevice( deviceName
-                                             , deviceFile[deviceName]["ipAdress"]
-                                             , deviceFile[deviceName]["port"]
-                                             , deviceFile[deviceName]["hardware_config"]
-                                             )
-        
+        if deviceFile is not None:
+            with open(deviceFile) as deviceFile:
+                deviceFile = json.load(deviceFile)
+                for deviceName in deviceFile:
+                    self.selector.addSingleDevice( deviceName
+                                                 , deviceFile[deviceName]["ipAdress"]
+                                                 , deviceFile[deviceName]["port"]
+                                                 , deviceFile[deviceName]["hardware_config"]
+                                                 )
+
     def removeDevice(self, deviceName):
         self.selector.removeDevice(deviceName)
         
@@ -124,9 +125,11 @@ class WorkflowManager:
         @return taskResult aggregated result or collected results from devices
         """
         if self.selector.taskInQueue(taskName):
+            print("Hello")
             return []
         else:
             aggregator = self.selector.get_aggregator_of_task(taskName)
+            print(aggregator)
             taskResult = aggregator.requestAggregation()
             if self.getTaskStatus(taskName) == self.TASK_STATUS_FINISHED:
                 if not self._testMode:
@@ -209,7 +212,6 @@ class WorkflowManager:
                                      )
         # request possibility from selector if task is feasible
         request_status = self._sendTaskRequest(task)
-        
         #task accepted
         if request_status:
             self.selector.addTask2Queue(task, priority)

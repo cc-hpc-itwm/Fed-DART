@@ -8,7 +8,7 @@ Fed-DART has three main components:
 * Local machine of the End-User (Data Scientist)
 * DART-Server
 * DART-Clients (e.g Raspberry Pi)
-<img src="/images/worklow_feddart.png" width="50%" height="50%" />
+<img src="/images/general_workflow_feddart.png" width="50%" height="50%" />
 
 ## End-User
 
@@ -28,20 +28,19 @@ The client must have a Linux system, the hardware architecture can be x86 or ARM
 
 Fed-DART also supports  a test-modus without needing a server and clients. The test mode runs on the local machine of the end-users
 with the conceps of folders as virtual clients.\
-<img src="/images/workflow_feddart_testmode.png" width="50%" height="50%" />
+<img src="/images/test_workflow_feddart_testmode.png" width="50%" height="50%" />
+ 
+## Test Environment with DART-Server and DART-Client as Docker-Container.
+For experimental usage we recommend to use Docker. We provide a docker-compose file for automatically setting up the infrastructure.
+<img src="/images/docker_workflow_feddart_testmode.png" width="50%" height="50%" />
+This will create a container for the DART-Server and two DART-Client containers.
+Following steps are needed:
+*cd docker/
+*docker-compose build
+*docker-compose up -d (starts the infrastructure)
+*docker-compose down (shut down the infrastructure after experiments).
+We point out, that the used Docker-container are not optimized regarding security and size.
 
-## Setting-up DART-Server and DART-Clients on Linux system.
-The following steps are only necessary if you want to set up the DART-Server and DART-Clients, not in the case of test modus.
-Clone this repo and cd into the dart folder and choose the right version(depends on your target platform). Unzip the tar file. If you want to
-start the server go into the folder /bin and execute dart-server.exe. The server will connect over SSH to the clients, therefore the server needs the public key of the clients (important: for connecting over SSH server and clients must have the same user name atm, a fix is WIP)
-In the case you want to configure the DART-Client go into the folder /worker and open the file worker.json. Set the path like that
-```python
-{
-  "python_home": path to python home or your conda environement (e.g "/home/user/miniconda3/envs/beta_version/") ,
-  "module_prefix": path to the folder of the files (e.g "/home/user/feddart/client1/"),
-  "output_directory": path for logging std output (e.g. "/var/tmp/")
-}
-```
 ## Getting Started: Examples 
 We have three simple examples to sketch the general workflow of using Fed-DART.
 All examples have two options
@@ -69,27 +68,29 @@ manager.createInitTask( parameterDict = {"model_structure": global_model.to_json
                       , executeFunction = "init"
                       )
 manager.startFedDART( runtimeFile = "../serverFile.json" 
-                    , deviceFile = "../deviceFile.json"
                     , maximal_numberDevices = 100
                     )
 ```
 Fed-DART will support multiple federated learning workflows. In the current stage of development, we only support the case of 
 sending tasks (taskType 1) to specific devices.The case of sending tasks to random devices, which fullfill certain requirements, will be included soon.
+To specify the paramterDict for the task, fetch the currently connected  devices from the DART-server and set parameters.
+```python
+list_devices = manager.getAllDeviceNames()
+parameterDict = {}
+for idx, device in enumerate(list_devices):
+	parameterDict[device] = { "global_model_weights": global_model_weights 
+							, "batch_size": 10*idx + 8
+							, "epochs": idx + 1 
+							}
+```
+Afterwards start the task.
 ```python
 manager.startTask( taskType = 1 
                  , taskName = task_name
-                 , parameterDict =  { "device_one": { "global_model_weights": global_model_weights
-                                                    , "batch_size": 64
-                                                    , "epochs": 2
-                                                    }
-                                    , "device_two": { "global_model_weights": global_model_weights
-                                                    , "batch_size": 8
-                                                    , "epochs": 4
-                                                    }
-                                    }
-                , filePath = "client_learning" 
-                , executeFunction = "learn"
-                )
+                 , parameterDict = parameterDict
+                 , filePath = "client_learning" 
+                 , executeFunction = "learn"
+                 )
 while manager.getTaskStatus(task_name) != manager.TASK_STATUS_FINISHED:
     time.sleep(3)
 taskResult = manager.getTaskResult(task_name) #return all results which are currently available
@@ -206,42 +207,6 @@ taskResult.duration
 taskResult.resultDict #format like {"result_0": 5, "result_1": 2 }
 taskResult.resultList #format like [5,2]
 ```
-## Getting Started
-We start with the example in the hello_world folder. We assume for experimental testing that the clients are running on your local machine. In a real-world scenario the file hello_world_client.py will be run on edge devices, the file hello_world_server.py on your local machine. FedDART runs in background on your local machine and will communicate with the clients over the DART server. \
-The IP adress of the server is stored in runtimeFile.json, such that FedDART knows to which server it should connect. Moreover we assume for this first example that we know the clients (e.g edge devices) to which we want to connect. The device names together with the ipAdress are stored in deviceFile.json.
-Following steps are necessary to exceute this example (we assume the same folder structur and code as in the page Set up FedDART for experimental usage
-1. cd beta_version/dart/dart/worker and set in worker.json module prefix to /home/user_name/beta_version/examples/hello_world/
-2. cd beta_version/dart/dart/bin and ./dart-server.exe \
-  2.1 in case you want to start the dart server on styx/carme, please use:\
-    2.1.1 carme_prepare_dart_from_pip \
-    2.1.2 ./dart-server.exe --gspc-ssh-private-key "${CARME_SSHDIR}/id_rsa_${CARME_JOB_ID}" --gspc-ssh-public-key "${CARME_SSHDIR}/id_rsa_${CARME_JOB_ID}.pub" --gspc-ssh-port "${SSHD_PORT}"
-
-3. Open a new terminal
-4. in case ssh is not running and you have sudo permissions: sudo service ssh start
-5. cd beta_version/examples/hello_world and execute file hello_world_server.py
-
-## Set up FedDART for experimental usage
-
-For experimental usage we deliver Fed-Dart together with DART.\
-**Requirements**\
-Linux on x86 architecture. If you are using Windows you can use WSL 1 instead.\
-**Installation**\
-Steps for installation
-1. Clone this git repo in  a folder e.g. feddart
-2. cd feddart/
-3. git checkout -b your_branch origin/beta_version
-4. create conda environment with python and pip installed, e.g name env_feddart \
-  4.1 conda create -n env_feddart \
-  4.2 install pip, e.g. conda install pip 
-5. pip install .
-6. cd dart/ and tar -xf dart_x86_64.tar
-7. cd dart/worker/
-8. open worker.json file:\
-  8.1 remove entry "name" \
- 8.2 Set path to your conda environement in python_home e.g. /home/user_name/miniconda3/envs/env_feddart/ \
- 8.3 Remove empty space between "module_prefix" and : .Set path to folder where the executable files are 
-     in "module_prefix" e.g /home/user_name/beta_version/examples\
- 8.4 Set path were the logging should be saved
 
 ## Further remarks
 Fed-DART is currently under development and therefore room for improvement.

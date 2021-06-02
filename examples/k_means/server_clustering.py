@@ -31,23 +31,23 @@ if args.mode == "test":
                         )
 else: 
     manager.startFedDART( runtimeFile = "../serverFile.json" 
-                        , deviceFile = "../deviceFile.json"
+                        #, deviceFile = "../deviceFile.json"
                         , maximal_numberDevices = 100
                         )
 
-time.sleep(3) #wait init task finished
-global_centroids = np.array([[-1,0], [0, 2]])
+time.sleep(6) #wait init task finished
 for global_round in range(DEFAULT_NUM_ITERATIONS):
     task_name = "task_" + str(global_round) #task name must be unique
+    global_centroids = np.array([[-1,0], [0, 2]])
+    list_devices = manager.getAllDeviceNames()
+    parameterDict = {}
+    for idx, device in enumerate(list_devices):
+        parameterDict[device] = { "global_centroids": global_centroids 
+                                , "local_iterations": idx + 2
+                                }
     manager.startTask( taskType = 1 
                      , taskName = task_name
-                     , parameterDict =  { "device_one": { "global_centroids": global_centroids
-                                                        , "local_iterations": 10
-                                                        }
-                                        , "device_two": { "global_centroids": global_centroids
-                                                        , "local_iterations": 10
-                                                        }
-                                        }
+                     , parameterDict =  parameterDict
                      , filePath = "client_clustering" 
                      , executeFunction = "local_k_means"
                      )
@@ -70,4 +70,4 @@ for global_round in range(DEFAULT_NUM_ITERATIONS):
         logger.info("Stop criterion reached at iteration %s.", i)
         break
 
-manager.stopFedDART()
+#manager.stopFedDART() optional you can shut down the server with stopFedDART()
