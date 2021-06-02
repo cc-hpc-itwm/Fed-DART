@@ -207,7 +207,17 @@ class dummyClient:
         at the moment not supported by real dart server
         """
         raise NotImplementedError("not implemented yet!")
-			
+
+    def get_workers(self):
+        list_worker = []
+        for worker in self.worker_list:
+            dict_worker = {}
+            dict_worker['name'] = worker.worker_name
+            dict_worker['count'] = 1
+            dict_worker['capabilities'] = ''
+            list_worker.append(dict_worker)
+        return {'workers': list_worker}
+
     def add_workers( self
                    , hosts
                    , workers_per_host

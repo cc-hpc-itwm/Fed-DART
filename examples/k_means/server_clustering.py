@@ -31,10 +31,9 @@ if args.mode == "test":
                         )
 else: 
     manager.startFedDART( runtimeFile = "../serverFile.json" 
-                        #, deviceFile = "../deviceFile.json"
                         , maximal_numberDevices = 100
                         )
-
+list_devices = manager.getAllDeviceNames()
 time.sleep(6) #wait init task finished
 for global_round in range(DEFAULT_NUM_ITERATIONS):
     task_name = "task_" + str(global_round) #task name must be unique

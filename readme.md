@@ -28,11 +28,11 @@ The client must have a Linux system, the hardware architecture can be x86 or ARM
 
 Fed-DART also supports  a test-modus without needing a server and clients. The test mode runs on the local machine of the end-users
 with the conceps of folders as virtual clients.\
-<img src="/images/test_workflow_feddart_testmode.png" width="50%" height="50%" />
+<img src="/images/test_workflow_feddart.png" width="50%" height="50%" />
  
 ## Test Environment with DART-Server and DART-Client as Docker-Container.
 For experimental usage we recommend to use Docker. We provide a docker-compose file for automatically setting up the infrastructure.
-<img src="/images/docker_workflow_feddart_testmode.png" width="50%" height="50%" />
+<img src="/images/docker_workflow_feddart.png" width="50%" height="50%" />
 This will create a container for the DART-Server and two DART-Client containers.
 Following steps are needed:
 *cd docker/

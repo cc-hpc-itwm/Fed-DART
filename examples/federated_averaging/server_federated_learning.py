@@ -36,6 +36,7 @@ else:
                         , maximal_numberDevices = 100
                         )
 LEARNING_ROUNDS = 4
+list_devices = manager.getAllDeviceNames()
 time.sleep(5) #wait init task finished
 for learning_round in range(LEARNING_ROUNDS):
     task_name = "task_" + str(learning_round) #task name must be unique
