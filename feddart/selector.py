@@ -33,7 +33,7 @@ class Selector():
         """
         self._runtime = runtime
         self._maxSizeDeviceHolder = maxSizeDeviceHolder 
-        self._devices = self._runtime.registeredDevices
+        self._devices = [] 
         self._aggregators = []
         self._device_holders = []
         self._taskQueue = []
@@ -152,13 +152,15 @@ class Selector():
         initializationDevices = []
         for device in deviceList:
             if device.hasTask(self.initTask.taskName) == False:
-                device.addTask(self.initTask.taskName, self.initTask.parameterDict)
                 initializationDevices.append(device)
         number_not_inializedDevices = len(initializationDevices)
         if number_not_inializedDevices > 0:
-            deviceHolder = DeviceHolder( maxSize = number_not_inializedDevices
-                                       , deviceList = initializationDevices
-                                       )
+            deviceHolder = DeviceHolder( maxSize = number_not_inializedDevices)
+            for device in initializationDevices:
+                deviceHolder.addDevice( device
+                                      , self.initTask.taskName
+                                      , self.initTask.parameterDict
+                                      )
             deviceHolder.broadcastTask(self.initTask)
 
     def addSingleDevice( self 

@@ -33,25 +33,24 @@ if args.mode == "test":
                         )
 else: 
     manager.startFedDART( runtimeFile = "../serverFile.json" 
-                        , deviceFile = "../deviceFile.json"
                         , maximal_numberDevices = 100
                         )
 LEARNING_ROUNDS = 4
+list_devices = manager.getAllDeviceNames()
 time.sleep(5) #wait init task finished
 for learning_round in range(LEARNING_ROUNDS):
     task_name = "task_" + str(learning_round) #task name must be unique
     global_model_weights = global_model.get_weights()
+    list_devices = manager.getAllDeviceNames()
+    parameterDict = {}
+    for idx, device in enumerate(list_devices):
+        parameterDict[device] = { "global_model_weights": global_model_weights 
+                                , "batch_size": 10*idx + 8
+                                , "epochs": idx + 1 
+                                }
     manager.startTask( taskType = 1 
                      , taskName = task_name
-                     , parameterDict =  { "device_one": { "global_model_weights": global_model_weights
-                                                        , "batch_size": 64
-                                                        , "epochs": 2
-                                                        }
-                                        , "device_two": { "global_model_weights": global_model_weights
-                                                        , "batch_size": 128
-                                                        , "epochs": 1
-                                                        }
-                                        }
+                     , parameterDict =  parameterDict
                      , filePath = "client_learning" 
                      , executeFunction = "learn"
                      )
@@ -65,4 +64,4 @@ for learning_round in range(LEARNING_ROUNDS):
     global_weights = np.mean(local_weights, axis = 0)
     global_model.set_weights(global_weights)
    
-manager.stopFedDART()
+#manager.stopFedDART() optional you can shut down the server with stopFedDART()

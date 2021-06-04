@@ -1,0 +1,51 @@
+# Build Ubuntu image with base functionality.
+FROM ubuntu:focal AS ubuntu-base
+RUN apt-get -qq update
+RUN apt-get install -y libpython3-dev
+RUN apt-get update && apt-get install -y git
+ENV DEBIAN_FRONTEND noninteractive
+SHELL ["/bin/bash", "-o", "pipefail", "-c"] 
+RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo ubuntu
+RUN echo 'ubuntu:ubuntu' | chpasswd
+USER ubuntu
+WORKDIR /home/ubuntu
+
+# Build image with Python and SSHD.
+FROM ubuntu-base AS ubuntu-with-sshd
+USER root
+
+# Install required tools.
+RUN apt-get -qq update \
+    && apt-get -qq --no-install-recommends install vim-tiny=2:8.1.* \
+    && apt-get -qq --no-install-recommends install sudo=1.8.* \
+    && apt-get -qq --no-install-recommends install openssh-server=1:8.* \
+    && apt-get -qq clean    \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configure sudo.
+RUN ex +"%s/^%sudo.*$/%sudo ALL=(ALL:ALL) NOPASSWD:ALL/g" -scwq! /etc/sudoers
+
+# Generate and configure user keys.
+USER ubuntu
+RUN cd /home/ubuntu
+
+RUN mkdir /home/ubuntu/.ssh
+RUN git clone https://github.com/cc-hpc-itwm/Fed-DART.git /home/ubuntu/Fed-DART
+
+RUN cd /home/ubuntu/Fed-DART/dart && tar -xf dart_x86_64.tar.gz
+
+#RUN touch /home/ubuntu/.ssh/authorized_keys && cat /keys/id_rsa.pub > /home/ubuntu/.ssh/authorized_keys
+#RUN cp /keys/id_rsa /home/ubuntu/.ssh/ && cp /keys/id_rsa.pub /home/ubuntu/.ssh/
+
+# Setup default command and/or parameters.
+EXPOSE 7777
+CMD ["/usr/bin/sudo", "/usr/sbin/sshd", "-D", "-o", "ListenAddress=0.0.0.0"]
+
+WORKDIR /home/ubuntu/Fed-DART/dart/dart/bin/ 
+USER ubuntu
+ADD entrypoint_server.sh /entrypoint_server.sh
+USER root
+RUN chmod +x /entrypoint_server.sh
+
+
+ENTRYPOINT ["/entrypoint_server.sh"]

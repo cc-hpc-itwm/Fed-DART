@@ -1,3 +1,4 @@
+from feddart.initTask import InitTask
 from feddart.deviceSingle import DeviceSingle
 from feddart.messageTranslator import MessageTranslator
 from feddart.selector import Selector
@@ -6,6 +7,7 @@ import os
 import requests
 import json
 from enum import Enum
+from copy import deepcopy
 from feddart.dart import Client, job_status
 from feddart.dummydart import dummyClient, dummy_job_status
 
@@ -54,6 +56,7 @@ class DartRuntime:
         """!
         property: registeredDevices. Implements the getter
         """
+        self.updateRegisteredDevices()
         return list(self._registeredDevices.values())
 
     @property
@@ -61,6 +64,7 @@ class DartRuntime:
         """!
         property: registeredDevices. Implements the getter
         """
+        self.updateRegisteredDevices()
         return list(self._registeredDevices.keys())
 
     @registeredDevices.setter
@@ -108,6 +112,36 @@ class DartRuntime:
         property: counterJobs. Implements the getter
         """
         return self._counterJobs
+
+    def updateRegisteredDevices(self):
+        """!
+        Fetch from the DART-server the currently connected devices. If needed, create new
+        virtual devices or delete them.
+        """
+        oldRegisteredDevicesbyName = deepcopy(list(self._registeredDevices.keys()))
+        newRegisteredDevices = self.runtime.get_workers()
+        newRegisteredDevices = newRegisteredDevices["workers"]
+        newRegisteredDevicesbyName = []
+        for device in newRegisteredDevices:
+            newRegisteredDevicesbyName.append(device["name"])
+        for newDevice in newRegisteredDevicesbyName:
+            if newDevice not in oldRegisteredDevicesbyName: #add new Devices
+                initTask = None 
+                if self.selector is not None:
+                    initTask = self.selector.initTask
+                device = DeviceSingle( name = newDevice
+                                     , ipAdress = None
+                                     , port = None
+                                     , dartRuntime = self
+                                     , physicalName = None
+                                     , hardwareConfig = {}
+                                     , taskDict = {}
+                                     , initTask = initTask
+                                     )
+                self._registeredDevices[newDevice] = device
+        for oldDevice in oldRegisteredDevicesbyName:
+            if oldDevice not in newRegisteredDevicesbyName:
+                del self._registeredDevices[oldDevice]
 
     def getServerInformation(self):
         """!
