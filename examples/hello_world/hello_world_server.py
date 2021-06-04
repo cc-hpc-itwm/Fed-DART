@@ -30,12 +30,13 @@ if args.mode == "test":
                         )
 else: 
     manager.startFedDART( runtimeFile = "../serverFile.json" 
-                        , deviceFile = None #"../deviceFile.json"
+                        , deviceFile = None 
                         , maximal_numberDevices = 100
                         )
 time.sleep(1)
 #Get list of all connected devices by name
 list_devices = manager.getAllDeviceNames()
+time.sleep(2)
 parameterDict = {}
 for idx, device in enumerate(list_devices):
     parameterDict[device] = { "param1": idx ,"param2": idx + 2}
