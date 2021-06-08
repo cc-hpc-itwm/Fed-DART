@@ -125,15 +125,12 @@ class WorkflowManager:
         @return taskResult aggregated result or collected results from devices
         """
         if self.selector.taskInQueue(taskName):
-            print("Hello")
             return []
         else:
             aggregator = self.selector.get_aggregator_of_task(taskName)
-            print(aggregator)
             taskResult = aggregator.requestAggregation()
             if self.getTaskStatus(taskName) == self.TASK_STATUS_FINISHED:
-                if not self._testMode:
-                    self.stopTask(taskName)
+                self.stopTask(taskName)
             return taskResult 
 
     def getAllDeviceNames(self):
