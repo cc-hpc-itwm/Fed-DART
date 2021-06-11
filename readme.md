@@ -14,53 +14,54 @@ Fed-DART has three main components:
 
 The End-User must install the pip-package feddart on his local machine.
 Feddart itself communicates via REST-API with the DART server in the background.
-Feddart has an easy and comfortable user-interface to shedule tasks for the federated learning clients.
-The aspects like communication, connection handling, logging are handled internally in feddart. The end
+Feddart has an easy and comfortable user-interface to schedule tasks for the federated learning clients.
+Other aspects such as communication, connection handling, logging are handled by feddart. The end
 user is only responsible for the federated learning algorithm.
 
 ### DART-Server
-The DART-Server is responsible for communcation and task sheduling to the clients.The communication between
-serer and clients is done via DART, a Python wrapper around GPI-Space.
+The DART-Server is responsible for communication and task sheduling on the client devices. The communication between
+server and clients is done via DART, a Python wrapper around GPI-Space.
 
 ### DART-Clients
 The client has the computational power for executing a local federated learning task with sharing the local parameters afterwards.
 The client must have a Linux system, the hardware architecture can be x86 or ARM. 
 
-Fed-DART also supports  a test-modus without needing a server and clients. The test mode runs on the local machine of the end-users
-with the conceps of folders as virtual clients.\
+Fed-DART also supports  a test-mode without needing a server and clients. The test mode runs on the local machine of the end-users
+with the concept of folders as virtual clients.\
 <img src="/images/test_workflow_feddart.png" width="50%" height="50%" />
  
 ## Test Environment with DART-Server and DART-Client as Docker-Container.
-For experimental usage we recommend to use Docker. We provide a docker-compose file for automatically setting up the infrastructure.
+For experimental usage we recommend to use Docker. We provide a docker-compose file for automatically setting up the infrastructure. <br>
 <img src="/images/docker_workflow_feddart.png" width="50%" height="50%" />
-This will create a container for the DART-Server and two DART-Client containers.
-Following steps are needed:
-*cd docker/
-*docker-compose build
-*docker-compose up -d (starts the infrastructure)
-*docker-compose down (shut down the infrastructure after experiments).
-We point out, that the used Docker-container are not optimized regarding security and size.
+<br>
+This will create a container for the DART-Server and two DART-Client containers.  
+Following steps are needed: <br>
+- cd docker/ 
+- docker-compose build 
+- docker-compose up -d (starts the infrastructure)
+- docker-compose down (shut down the infrastructure after experiments)
+
+**NOTE:** The used Docker-container are not optimized for security and size.
 
 ## Getting Started: Examples 
-We have three simple examples to sketch the general workflow of using Fed-DART.
+We have three simple examples to sketch the general workflow of Fed-DART usage.
 All examples have two options
 ```python
-python example_programm -m test/real -ep 0
+python example_program -m test/real -ep 0
 ```
 The option -m switch between test or real mode. The option -ep is needed for test mode to have an error probability. 
-For the sake of brevity we look on the federated averaging example on the MNIST dataset.
-The code which runs on end users local machine can be found in examples/federated_averaging.
-Before executing the learning algorithm the end-user must initialize the WorkflowManager, which 
+For the sake of brevity we look at the federated averaging example using MNIST dataset.
+The code which runs on end user's local machine can be found in examples/federated_averaging.
+Before executing the learning algorithm, end-user must initialize the WorkflowManager which 
 is the user-interface to Fed-DART.
 ```python
 from feddart.workflowManager import WorkflowManager
 manager = WorkflowManager()
 ```
-For some use-case it's necessary, that an initialization task is executed before an learning task on every client.
-In the current example, the client must know the model structure before training the model itself (we only send 
-the weights during learning to the clients). Therefore the use can create an init task at the begining. Fed-DART
-automatically send this init task to clients, also to later connected ones, and checks if the init task was sucessfully
-executed on the client, before accepting new tasks. The server and server-known clients can 
+For some use-case, it's necessary that an initialization task is executed on every client device before any learning task.
+In the current example, client must know the model structure before training the model itself (we only send 
+the model's weights during learning process to the clients). Therefore the user can create an init task at the begining.
+Fed-DART automatically sends this init task to clients, also to the ones connected later on, and checks if the init task was sucessfully executed on all clients before accepting new tasks. The server and server-known clients can 
 be started through the function startFedDART.
 ```python
 manager.createInitTask( parameterDict = {"model_structure": global_model.to_json()}
@@ -71,9 +72,8 @@ manager.startFedDART( runtimeFile = "../serverFile.json"
                     , maximal_numberDevices = 100
                     )
 ```
-Fed-DART will support multiple federated learning workflows. In the current stage of development, we only support the case of 
-sending tasks (taskType 1) to specific devices.The case of sending tasks to random devices, which fullfill certain requirements, will be included soon.
-To specify the paramterDict for the task, fetch the currently connected  devices from the DART-server and set parameters.
+Fed-DART will support multiple federated learning workflows. In the current stage of development, we only support the case of sending tasks (taskType 1) to specific devices. The case of sending tasks to devices, which fulfills certain hardware requirements, will be included soon. <br>
+To specify the parameterDict for the task, fetch the currently connected devices from the DART-server and set parameters.
 ```python
 list_devices = manager.getAllDeviceNames()
 parameterDict = {}
@@ -96,9 +96,9 @@ while manager.getTaskStatus(task_name) != manager.TASK_STATUS_FINISHED:
 taskResult = manager.getTaskResult(task_name) #return all results which are currently available
 
 ```
-To excute this function we will look now on client side into the file client_learning and the two functions
-init und learn. To use this function together with feddart you must decorate them with @feddart.
-The init function has no return. If an exception is thrown during the init task it will be automatically returned.
+To execute this function we will now look on client side in the file client1/client_learning and the two functions
+init and learn. To use these functions together with feddart you must decorate them with @feddart.
+The init function has no return value. If an exception is thrown during the init task it will be automatically returned.
 
 ```python
 from feddart.messageTranslator import feddart
@@ -125,7 +125,7 @@ def learn(global_model_weights, batch_size, epochs):
 
 ## Using Fed-DART as pip package
 To use feddart as pip package on your local machine cd into the repo and type
-into the console
+in the console
 ```python
 pip install .
 ```
@@ -138,7 +138,7 @@ manager = WorkflowManager( testMode #True or False
                          , errorProbability #probability for throwing errors in test mode, set it atm to 0
                          )
 ```
-* Creation of init task. Must be done before connect to DART-server
+* Creation of init task. Must be done before connecting to DART-server
 ```python
 manager.createInitTask( parameterDict #dictionary with parameter names and values
                       , filePath #python file of executeFunction
@@ -153,7 +153,7 @@ manager.startFedDART( runtimeFile #settings how to connect to server
                     )
 ```
 
-* Create a task. Fed-Dart will check the task requirements and accepts the task if
+* Create a task. Fed-Dart will check the task requirements and accept the task if
   the requirements are fullfilled.
 ```python
 manager.startTask( taskType #atm only type one is supported
@@ -169,7 +169,7 @@ manager.startTask( taskType #atm only type one is supported
 manager.getTaskStatus( taskName) #return: "in queue", "in progresss" or "finished
 ```
 * At any time we can get the results of the task. The return will be a list of
-  task results from the already finished clients. To get more informations about the API
+  task results from the already finished clients. To get more information about the API
   of the task results, we refer to the documentation "API of task results" below.
 ```python
 manager.getTaskResult( taskName) #return: list of task results
@@ -211,7 +211,7 @@ taskResult.resultList #format like [5,2]
 ## Further remarks
 Fed-DART is currently under development and therefore room for improvement.
 If you have any issues, suggestions for new features or new example use-cases 
-which can be intregated in our repo feel free to contact
+which can be integrated in our repo feel free to contact
 nico.weber@itwm.fraunhofer.de.
 We also have a Teams channel for announcing news regarding Fed-DART. If you want to 
 join this channel, contact us.
