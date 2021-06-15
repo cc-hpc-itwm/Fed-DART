@@ -1,6 +1,5 @@
 from feddart.aggregator import AggregatorBase
 from feddart.deviceHolder import DeviceHolder
-from feddart.logServer import LogServer
 from feddart.deviceSingle import DeviceSingle
 import math
 
@@ -22,10 +21,10 @@ class DeviceAggregator(AggregatorBase):
         @param task instance of a task
         @param deviceHolders list of deviceHolders
         @param childAggregators list of childAggregators
-        @param maxSizeDeviceHolder maximal number of devices for deviceHolder
-        @param maxNumDeviceHolder maximal number of deviceHolders per aggregator/childaggregator
-        @param maxNumChildAggregators maximal number of allowed childAggregators
-        @param aggregatedResult aggrated result of local task results
+        @param maxSizeDeviceHolder maximum number of devices for deviceHolder
+        @param maxNumDeviceHolder maximum number of deviceHolders per aggregator/childaggregator
+        @param maxNumChildAggregators maximum number of allowed childAggregators
+        @param aggregatedResult aggregated result of local task results
         @param logServer storage of the results and/or aggregated result 
 
         """
@@ -37,8 +36,8 @@ class DeviceAggregator(AggregatorBase):
         self._childAggregators = []
         numDevices = task.numDevices
         if maxNumChildAggregators > 0:
-            amount_childAggregators = self.compute_amount_needed_childAggregators(numDevices)
-            self._childAggregators = [ DeviceAggregator( []  #init at first without devices; devices will be added at the end of constructor
+            amount_childAggregators = self.compute_required_childAggregators_count(numDevices)
+            self._childAggregators = [ DeviceAggregator([]  #init at first without devices; devices will be added at the end of constructor
                                                        , task
                                                        , maxSizeDeviceHolder = maxSizeDeviceHolder
                                                        , maxNumDeviceHolder = maxNumDeviceHolder
@@ -136,7 +135,13 @@ class DeviceAggregator(AggregatorBase):
         """
         allDevices = []
         for dHolder in self.deviceHolders:
-            allDevices = allDevices + dHolder.devices
+            allDevices.extend(dHolder.devices)
+
+        if self.childAggregators:
+            for child in self.childAggregators:
+                for device_holder in child.deviceHolders:
+                    allDevices.extend(device_holder.devices)
+                    
         return allDevices
 #-------------------------------------
     @property
@@ -173,7 +178,7 @@ class DeviceAggregator(AggregatorBase):
 
     def get_max_number_devices(self):
         """!
-        Get maximal amount of devices from deviceAggregator or in case 
+        Get total number of devices from deviceAggregator or in case 
         of childAggregators iterate over all child aggregators.
 
         @return total int number of maximal amount of devices
@@ -188,8 +193,8 @@ class DeviceAggregator(AggregatorBase):
 
     def get_OnlineDevices(self):
         """!
-        Get a list of devices, which are online. 
-        In case of childAggreators iterate over childaggregatos
+        Get a list of devices, which are online.
+        In case of childAggregators iterate over childaggregatos
         and get from them the online devices
 
         @return deviceList
@@ -197,19 +202,18 @@ class DeviceAggregator(AggregatorBase):
         deviceList = []
         if self.childAggregators:
             for aggregator in self.childAggregators:
-                deviceList = deviceList + aggregator.get_OnlineDevices()
+                deviceList.extend(aggregator.get_OnlineDevices())
             return deviceList
         for dHolder in self.deviceHolders:
-            deviceList = deviceList + dHolder.getOnlineDevices()
+            deviceList.extend(dHolder.getOnlineDevices())
         return deviceList
 
 #-------------functions for setting up device aggregator------------------
-    def compute_amount_needed_childAggregators(self, numberDevices):
+    def compute_required_childAggregators_count(self, numberDevices):
         """!
-        Check if child aggregators are needed. If necessary compute the amount of 
-        needed child aggregators
+        Check if child aggregators are required and compute the amount
 
-        @param numberDevices int amout of needed devices
+        @param numberDevices int amount of required devices
         """
         amount_needed_childAggregators = 0
         maxDevices = self._maxNumDeviceHolder * self._maxSizeDeviceHolder
@@ -217,7 +221,7 @@ class DeviceAggregator(AggregatorBase):
             # get necessary devices per childAggregators
             devicesPerChild = math.ceil(numberDevices/self._maxNumChildAggregators)
             if devicesPerChild > self._maxSizeDeviceHolder:
-                raise ValueError("Too much devices for maximal allowed numbers of child aggregators!")
+                raise ValueError("More devices are required than allowed per child aggregator!")
             amount_needed_childAggregators = math.ceil(numberDevices/maxDevices)
         return amount_needed_childAggregators
 
@@ -237,7 +241,7 @@ class DeviceAggregator(AggregatorBase):
     def addSingleDevice(self, device):
         """!
         Add single device to aggregator. If we have child aggregators
-        iterate over child aggreagators and add it to the first one,
+        iterate over child aggregators and add it to the first one,
         who have capacity.
 
         @param device instance of class deviceSingle
@@ -248,7 +252,7 @@ class DeviceAggregator(AggregatorBase):
             for aggregator in self.childAggregators:
                 if aggregator.addSingleDevice(device) == True:
                     return
-            raise ValueError("Device holders are completly full!")
+            raise ValueError("Device holders are completely full!")
         else:
             for deviceHolder in self.deviceHolders:
                 if device in deviceHolder.devices:
@@ -260,14 +264,14 @@ class DeviceAggregator(AggregatorBase):
                     deviceHolder.addDevice(device, taskName, deviceParameterDict)
                     return True
             if self.maxNumChildAggregators > 0:
-                raise ValueError("Device holders are completly full!")
+                raise ValueError("Device holders are completely full!")
 
 #-------------functions regarding task status-----------------------
     def sendTask(self):
         """!
         Send task to device.
 
-        Each Aggregator iterate over the device holders, which broacast the 
+        Each Aggregator iterate over the device holders, which broadcast the 
         task to the runtime.
         """
         if self.task is None:
@@ -318,7 +322,7 @@ class DeviceAggregator(AggregatorBase):
             raise ValueError("There is no task assigned!")
         taskName = self.task.taskName
         if self.childAggregators:
-            for childAggregator in self.childAggreators:
+            for childAggregator in self.childAggregators:
                 childAggregator.stopTask()
         else:
             for deviceHolder in self.deviceHolders:
@@ -329,7 +333,6 @@ class DeviceAggregator(AggregatorBase):
     def aggregate_devicesResults(self):
         """!
         Collect results from device, which are finished, and aggregate them optional.
-        @param boolean_aggregate option to aggregate results directly
 
         @return list with instances of taskResult
         """
@@ -338,14 +341,14 @@ class DeviceAggregator(AggregatorBase):
             print('no device holders available')
         # get all devices from the deviceholders
         taskName = self.task.taskName
-        intermediatedResults = []
+        intermediateResults = []
         for dHolder in self.deviceHolders:
-            intermediatedResults = intermediatedResults + dHolder.get_finishedTasks(taskName)
-        return intermediatedResults
+            intermediateResults.extend(dHolder.get_finishedTasks(taskName))
+        return intermediateResults
 
     def requestAggregation(self):
         """!
-        In case of an aggregator with childaggregators, this functions triggers the 
+        In case of an aggregator with childaggregators, this function triggers the 
         aggregations by the child aggregators. Otherwise, it aggregates the results
         provided by all finished devices in its deviceHolders. 
 
@@ -361,15 +364,15 @@ class DeviceAggregator(AggregatorBase):
         result = []
         for aggregator in self.childAggregators:
             print('trigger aggregation by childaggregators')
-            result = result + aggregator.requestAggregation()
+            result.extend(aggregator.requestAggregation())
         return result
                    
 #--------------functions for writing log------------------------
     def sendLog(self, task):
         """!
         In case of no childAggregators iterate over device holders and devices.
-        Write the log to  the logServer.
-        In case of childAggragtors iterate first over them.
+        Write the log to the logServer.
+        In case of childAggregators iterate over them first.
 
         @param task instance of class task
         """
@@ -377,11 +380,12 @@ class DeviceAggregator(AggregatorBase):
         # get devices from device holders if there are no child aggregators
         if not self.childAggregators:
             for deviceHolder in self.deviceHolders:
-                for device in deviceHolder.deviceList:
-                    log = device.getLog(task)
+                for device in deviceHolder.devices:
+                    logs = device.getLog(task)
                     #return False when the device does not has this specific task
-                    if log:
-                        self.logServer.writeLog(log)
+                    if logs and self.logServer:
+                        self.logServer.writeLog(logs)
         # if there are child aggregators, get them first to trigger them sending the log
-        for aggregator in self.childAggregators:
-            aggregator.sendLog(task)     
+        else:
+            for aggregator in self.childAggregators:
+                aggregator.sendLog(task)     

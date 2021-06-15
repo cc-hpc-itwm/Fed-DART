@@ -58,18 +58,22 @@ class DeviceHolder():
         """
         if self.check_full():
             raise ValueError("DeviceHolder already full!")
-        devices = self.devices
-        devices = devices + [newDevice]
+        
+        assert isinstance(newDevice, DeviceSingle), "Device must be an instance of DeviceSingle"
         newDevice.addTask(taskName, deviceParameterDict)
-        self.devices = devices
+        self.devices.append(newDevice)
 
     def removeDevice(self, device):
-        if device in self._deviceList:
-            self._deviceList.remove(device)
+        """!
+        Remove device from the device list
+        @param device to be removed
+        """
+        if device in self.devices:
+            self.devices.remove(device)
 
     def check_full(self):
         """!
-        Check if the maximal amount of devices is already in deviceHolder
+        Check if the devices list has reached maximum limit
 
         @return boolean
         """
@@ -80,7 +84,7 @@ class DeviceHolder():
     
     def check_empty(self):
         """!
-        Check if no devices is in deviceHolder
+        Check if devices list is empty
 
         @return boolean
         """
@@ -92,7 +96,7 @@ class DeviceHolder():
     def stopTask(self, taskName):
         """!
         Stop the task on each device from the deviceHolder.
-        Remove the task from each device open task dict
+        Remove the task from each device's open task dict
         and stop the task on the server.
 
         @param task instance of class task
@@ -121,7 +125,7 @@ class DeviceHolder():
         """!
         Send the task at the same time to all devices
         in deviceHolder to minimze the number of requests to the server.
-        To start a task there must be already an job with the same name on the server 
+        To start a task, there must already be a job with the same name on the server 
         and the device must already have the task. 
         We assume that all devices in deviceHolder are connected to the same server.
 
@@ -148,15 +152,15 @@ class DeviceHolder():
     def devicesFinished(self, taskName):
         """!
         Check how many devices have already finished the task
-        and compare it againts the total number of devices.
+        and compare it against the total number of devices.
 
         @param string with task name
         @return self._devicesFinished boolean
         """
         if self._devicesFinished == False:
-            maximal_finished_tasks = len(self._deviceList)
+            total_devices = len(self.devices)
             number_finished_tasks = self.get_taskProgress(taskName)
-            if number_finished_tasks == maximal_finished_tasks:
+            if number_finished_tasks == total_devices:
                 self._devicesFinished = True
         return self._devicesFinished
 
@@ -167,7 +171,7 @@ class DeviceHolder():
         @return onlineDevices list of currently only devices.
         """
         onlineDevices = []
-        if not self._deviceList:
+        if not self.devices:
             raise KeyError('no devices available')
         for device in self.devices:
             if device.is_online() == True:
@@ -177,7 +181,7 @@ class DeviceHolder():
     def get_finishedTasks(self, taskName):
         """!
         Iterate over all devices and get the result from devices,
-        which are alread finished.
+        that have finished the task.
         @param taskName name of task
 
         @return list with instances of taskResult
@@ -194,7 +198,7 @@ class DeviceHolder():
     def get_taskProgress(self, taskName):
         """!
         Iterate over all devices and get a flag from devices,
-        which already have finished the task.
+        that have already finished the task.
         @param taskName string of task name
 
         @return number_finished_tasks int number of finished devices
