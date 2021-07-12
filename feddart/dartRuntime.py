@@ -10,6 +10,7 @@ from enum import Enum
 from copy import deepcopy
 from feddart.dart import Client, job_status
 from feddart.dummydart import dummyClient, dummy_job_status
+from feddart.logger import logger
 
 class DartRuntime:
     
@@ -42,7 +43,8 @@ class DartRuntime:
         self._messageTranslator = MessageTranslator()
         self._selector = None
         self._counterJobs = 0 #in our case Jobs = Task
-        print("dart runtime instantiated")
+        self.logger = logger(__name__)
+        self.logger.info('DartRuntime initiated')
     
     @property
     def runtime(self):
@@ -252,7 +254,7 @@ class DartRuntime:
             device.addTask(initTask.taskName,  initTask.parameterDict)
             device.startTask(initTask)
         #TODO Luca: where to specify port ?!
-        print(deviceName, "registered") 
+        self.logger.info("dartRuntime.addSingleDevice deviceName " + "registered") 
 
     def removeDevice(self, deviceName):
         """!

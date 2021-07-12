@@ -1,4 +1,5 @@
 
+from feddart.logger import logger
 
 class TaskResult:
 
@@ -10,6 +11,7 @@ class TaskResult:
         self._deviceName = deviceName
         self._duration = duration
         self._resultDict = resultDict
+        self.logger = logger(__name__)
 
     @property
     def deviceName(self):

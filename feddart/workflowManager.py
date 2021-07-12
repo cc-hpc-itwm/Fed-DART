@@ -5,6 +5,9 @@ from feddart.initTask import InitTask
 import json
 import time
 
+from feddart.logger import logger
+
+
 
 class WorkflowManager:
     
@@ -25,6 +28,7 @@ class WorkflowManager:
         Or first create selector and than add runtime to that ? better
         if we have multiple server ?
         """
+
         self._runtime = None
         self._selector = None
         self._maxSizeDeviceHolder = maxSizeDeviceHolder
@@ -32,9 +36,12 @@ class WorkflowManager:
         self._initTask = None
         self._testMode = testMode
         self._errorProbability = errorProbability
+        self.logger = logger(__name__)
+        self.logger.info('Workflow manager initiated')
 
     @property
     def maxSizeDeviceHolder(self):
+        self.logger.debug("_maxSizeDeviceHolder " + str(self._maxSizeDeviceHolder))
         return self._maxSizeDeviceHolder
     
     @property 
@@ -47,6 +54,7 @@ class WorkflowManager:
 
     @property
     def maximalNumberOpenJobs(self):
+        self.logger.debug("_maximalNumberOpenJobs " + str(self._maximalNumberOpenJobs))
         return self._maximalNumberOpenJobs
         
     def startFedDART( self
@@ -58,6 +66,11 @@ class WorkflowManager:
         @param deviceFile path to already known devices
         @todo specify deviceFile
         """
+        self.logger.debug('start feddart server, config:' 
+                            + "runtimeFile " + runtimeFile 
+                            + ",deviceFile " + deviceFile 
+                            + ",maximal_numberDevices " + str(maximal_numberDevices))
+
         with open(runtimeFile) as runtimeFile:
             runtime = json.load(runtimeFile)
             self._runtime = DartRuntime( runtime["server"]
@@ -81,6 +94,7 @@ class WorkflowManager:
                                                  )
 
     def removeDevice(self, deviceName):
+        self.logger.debug("remove device. deviceName " + str(deviceName))
         self.selector.removeDevice(deviceName)
         
     def _sendTaskRequest(self, task):
@@ -89,6 +103,7 @@ class WorkflowManager:
         the selector decide accept or reject the task
         @param task instance of task
         """
+        self.logger.debug("requestTaskAcceptance")
         return self.selector.requestTaskAcceptance(task)
         
     def getTaskStatus(self, taskName):
@@ -99,6 +114,7 @@ class WorkflowManager:
 
         @return string "in queue", "in progress" or "finished"
         """
+        self.logger.debug("getTaskStatus. task " + str(taskName))
         if self.selector.taskInQueue(taskName):
             return self.TASK_STATUS_IN_QUEUE
         else:
@@ -110,6 +126,7 @@ class WorkflowManager:
                 return self.TASK_STATUS_IN_PROGRESS
 
     def getServerInformation(self):
+        self.logger.debug("get_ServerInformation")
         return self.selector.runtime.get_ServerInformation()
 
     def getTaskResult( self
@@ -124,6 +141,7 @@ class WorkflowManager:
 
         @return taskResult aggregated result or collected results from devices
         """
+        self.logger.debug("getTaskResult. taskName " + str(taskName))
         if self.selector.taskInQueue(taskName):
             return []
         else:
@@ -139,6 +157,7 @@ class WorkflowManager:
 
         @return: list of device names
         """
+        self.logger.debug("getAllDeviceNames. deviceNames " + str(self.selector.deviceNames))
         return self.selector.deviceNames
 
     def stopTask(self, taskName):
@@ -147,12 +166,14 @@ class WorkflowManager:
         Should be done, when the task isn't needed anymore.
         @todo: add it as option to get_TaskResult ?!
         """
+        self.logger.debug("stopTask. taskName " + str(taskName))
         if self.selector.taskInQueue(taskName):
             self.selector.deleteTaskInQueue(taskName)
         else:
             self.selector.deleteAggregatorAndTask(taskName)
             
     def stopFedDART(self):
+        self.logger.debug("stopFedDART")
         self.runtime.stopRuntime()
     
     def createInitTask( self
@@ -163,6 +184,13 @@ class WorkflowManager:
                       , executeFunction = None
                       , configFile = None
                       ):
+        self.logger.debug("createInitTask. " + 
+                    ",parameterDict " + str(parameterDict) + 
+                    ",model " + str(model) + 
+                    ",hardwareRequirements " + str(hardwareRequirements) + 
+                    ",filePath " + str(filePath) + 
+                    ",executeFunction " + str(executeFunction) + 
+                    ",configFile " + str(configFile))
         task = InitTask( parameterDict
                        , model
                        , hardwareRequirements
@@ -187,6 +215,14 @@ class WorkflowManager:
         """!
         @param executeFunction name of function, which should be executed in filePath
         """
+        self.logger.debug("startTask. taskName " + taskName + 
+                    ",parameterDict " + str(parameterDict) + 
+                    ",model " + str(model) + 
+                    ",hardwareRequirements " + str(hardwareRequirements) + 
+                    ",filePath " + str(filePath) + 
+                    ",executeFunction " + str(executeFunction) + 
+                    ",configFile " + str(configFile) + 
+                    ",numDevices " + str(numDevices))
         # defaultTask
         if taskType == 0:
             task = DefaultTask( taskName
@@ -212,8 +248,8 @@ class WorkflowManager:
         #task accepted
         if request_status:
             self.selector.addTask2Queue(task, priority)
-            print("task accepted")
+            self.logger.info("task accepted")
         # task rejected
         else: 
-            print("task was not accepted - change your constraints?")
+            self.logger.info("task was not accepted - change your constraints?")
         return request_status
