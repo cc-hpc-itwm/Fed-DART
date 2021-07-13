@@ -121,8 +121,10 @@ class WorkflowManager:
             aggregator = self.selector.get_aggregator_of_task(taskName)
             taskFinished = aggregator.isTaskFinished()
             if taskFinished:
+                self.logger.debug("TaskStatus " + str(self.TASK_STATUS_FINISHED))
                 return self.TASK_STATUS_FINISHED
             else:
+                self.logger.debug("TaskStatus " + str(self.TASK_STATUS_IN_PROGRESS))
                 return self.TASK_STATUS_IN_PROGRESS
 
     def getServerInformation(self):

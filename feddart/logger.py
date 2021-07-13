@@ -14,5 +14,5 @@ def logger(name):
     logger = logging.getLogger(name)
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.ERROR)
     return logger

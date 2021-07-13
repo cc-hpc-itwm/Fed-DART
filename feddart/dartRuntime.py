@@ -34,9 +34,9 @@ class DartRuntime:
         @param counterJobs int number of open jobs on server
         """
         if testMode:
-            self._runtime = dummyClient(server, client_key, errorProbability)
+            self._restAPIClient = dummyClient(server, client_key, errorProbability)
         else:
-            self._runtime = Client(server, client_key)
+            self._restAPIClient = Client(server, client_key)
         self._maximal_number_devices = maximal_number_devices
         self._maximalNumberOpenJobs = maximalNumberOpenJobs
         self._registeredDevices = {}
@@ -47,11 +47,11 @@ class DartRuntime:
         self.logger.info('DartRuntime initiated')
     
     @property
-    def runtime(self):
+    def restAPIClient(self):
         """!
         property: runtime. Implements the getter
         """
-        return self._runtime
+        return self._restAPIClient
 
     @property
     def registeredDevices(self):
@@ -121,7 +121,7 @@ class DartRuntime:
         virtual devices or delete them.
         """
         oldRegisteredDevicesbyName = deepcopy(list(self._registeredDevices.keys()))
-        newRegisteredDevices = self.runtime.get_workers()
+        newRegisteredDevices = self.restAPIClient.get_workers()
         newRegisteredDevices = newRegisteredDevices["workers"]
         newRegisteredDevicesbyName = []
         for device in newRegisteredDevices:
@@ -151,7 +151,7 @@ class DartRuntime:
         The return type has the following structure
         {'servers': [{'host': '<host_name>', 'port': '<port_name>'}]}
         """
-        return self.runtime.get_server_information()
+        return self.restAPIClient.get_server_information()
 
     def get_Capacity_for_newTasks(self):
         """!
@@ -169,7 +169,7 @@ class DartRuntime:
 
         @return int 0 (unknown), 1 (running), 2 (stopped)
         """
-        return self.runtime.get_job_status(taskName)
+        return self.restAPIClient.get_job_status(taskName)
 
     def remove_result_from_server(self, taskName, resultID):
         """!
@@ -178,7 +178,7 @@ class DartRuntime:
         @param taskName string with name of the task
         @resultID unique identifier for the task result of a specifif device
         """
-        self.runtime.delete_job_result(taskName, resultID)
+        self.restAPIClient.delete_job_result(taskName, resultID)
 
     def get_TaskResult(self, taskName, deviceName):
         """!
@@ -200,7 +200,7 @@ class DartRuntime:
         @return resultID string with format '5ad55670-3ad4-4bb9-99cc-2b82b85bd8c2'
         """
         maxNumberResults = len(self.registeredDevices)
-        taskResult = self.runtime.get_job_results(taskName, maxNumberResults, deviceName + ".*")
+        taskResult = self.restAPIClient.get_job_results(taskName, maxNumberResults, deviceName + ".*")
         resultDevice, resultID = self._messageTranslator.convertDart2Python(taskResult, deviceName)
         return resultDevice, resultID
 
@@ -212,7 +212,6 @@ class DartRuntime:
         @param self._selector instance of class selector
         """
         self._selector = Selector(self, max_size_deviceHolder)
-        print("selector instantiated")
         return self._selector
 
     
@@ -237,6 +236,7 @@ class DartRuntime:
         @param initTask instance of class initTask
         """
         if deviceName in self._registeredDevices.keys():
+            self.logger.error("device name already in list: " + deviceName)
             raise KeyError("device name already in list")
         device = DeviceSingle( name = deviceName
                              , ipAdress = deviceIp
@@ -249,7 +249,7 @@ class DartRuntime:
                              )
         self._registeredDevices[deviceName] = device
         #add workers is blocking!
-        self.runtime.add_workers( [deviceIp], 1, deviceName, [""],0,{})
+        self.restAPIClient.add_workers( [deviceIp], 1, deviceName, [""],0,{})
         if initTask is not None:
             device.addTask(initTask.taskName,  initTask.parameterDict)
             device.startTask(initTask)
@@ -266,9 +266,10 @@ class DartRuntime:
         @todo good idea to destroy device ?
         """
         if deviceName not in self.registeredDevicesbyName:
+            self.logger.error("device name not in list: " + deviceName)
             raise KeyError("device name is not in list")
         device = self.getDevice(deviceName)
-        self.runtime.remove_workers(device.ipAdress)
+        self.restAPIClient.remove_workers(device.ipAdress)
         del device #TODO: good idea to destroy device
         del self._registeredDevices[deviceName]
 
@@ -280,6 +281,7 @@ class DartRuntime:
         @return instance of device
         """
         if deviceName not in self.registeredDevicesbyName:
+            self.logger.error("device name not in list: " + deviceName)
             raise KeyError("device name is not in list")
         return self._registeredDevices[deviceName]
 
@@ -293,7 +295,7 @@ class DartRuntime:
         @return int 0,1 or 2.
         @todo atm hacky.
         """
-        jobStatus = self.runtime.get_job_status(jobName)
+        jobStatus = self.restAPIClient.get_job_status(jobName)
         #TODO: ask Luca why return is job_status.unknown
         if jobStatus == job_status.unknown or jobStatus == dummy_job_status.unknown:
             return 0
@@ -311,8 +313,11 @@ class DartRuntime:
         @module path relativ path to file based on default path in worker.json
         @method method with should be executed in file
         """
-        self.runtime.add_job(name, module_path, method)
+        self.restAPIClient.add_job(name, module_path, method)
         self._counterJobs += 1
+        self.logger.info("added job: " + module_path + " " + 
+                str(method) + " new #jobs: " + str(self._counterJobs))
+        return
         
     def add_tasks(self, jobName, location_and_parameters):
         """!
@@ -322,7 +327,10 @@ class DartRuntime:
         @param location_and_parameters list of form [ { 'location' : '...', 'parameter' : ' ...'}, ...]
         @todo this function can be removed ?!
         """
-        self.runtime.add_tasks(jobName, location_and_parameters)
+        self.restAPIClient.add_tasks(jobName, location_and_parameters)
+        self.logger.error("added task: " + jobName + " " + str(location_and_parameters))
+
+        return
         
     def broadcastTaskToDevices(self, taskName, deviceNamesList, parameterList):
         """!
@@ -333,11 +341,13 @@ class DartRuntime:
         @param parameterList specifies parameters for devices like 
                [{'param1': 0, 'param2': 1}, {'param1': 10, 'param2': 5}]
         """
+        self.logger.info("broadcastTaskToDevices")
         for deviceName in deviceNamesList:
             if deviceName not in self.registeredDevicesbyName:
+                self.logger.error("broadcastTaskToDevices: " + deviceName + " is not known!")
                 raise ValueError("Device with name " + deviceName + " is not known!")
         parameterDARTformat = self._messageTranslator.convertPython2Dart(deviceNamesList, parameterList)
-        self.runtime.add_tasks(taskName, parameterDARTformat)
+        self.restAPIClient.add_tasks(taskName, parameterDARTformat)
         
     def get_ServerInformation(self):
         """!
@@ -345,21 +355,23 @@ class DartRuntime:
 
         @todo error messages in the moment
         """
-        return self.runtime.get_server_information()
+        self.logger.debug("get_ServerInformation " + str(self.runtime.get_server_information()))
+        return self.restAPIClient.get_server_information()
         
     def stopTask(self, taskName):
         """!
         Stop a task/job on the server. Therefore also
-        decreas the counter of Jobs on the server.
+        decrease the counter of Jobs on the server.
 
         @param taskName string with task name
         """
         self._counterJobs -= 1
-        self._runtime.stop_job(taskName)
+        self.restAPIClient.stop_job(taskName)
+        self.logger.debug("stopTask " + taskName + " new #jobs: " + str(self._counterJobs))
 
     def stopRuntime(self):
         """!
         Stop the server.
         """
-        self._runtime.stop_servers()
+        self.restAPIClient.stop_servers()
         
