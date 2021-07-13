@@ -4,6 +4,7 @@ import dill
 import binascii
 import functools
 
+from feddart.logger import logger 
 class MessageTranslatorBase(abc.ABC):
     #different application possible; e.g no compression of message, maximal compression, protobuf/pickle/dill
 
@@ -31,10 +32,14 @@ class MessageTranslator(MessageTranslatorBase):
     def convertPython2Dart(cls, list_client, list_params):
         """convert default message to dart format and return feasible format"""
         task_list = []
+        log = logger(__name__)
         #TODO: serialize parameters
+        logstring = ""
         for client, params in zip(list_client, list_params):
             dict_client = {'location': client, 'parameter': cls.packMessage(params)}
+            logstring = logstring + " " + str({'location': client, 'parameter': params})
             task_list.append(dict_client)
+        log.debug("MessageTranslator.convertPython2Dart " + logstring)
         return task_list
         
     @classmethod
@@ -43,12 +48,22 @@ class MessageTranslator(MessageTranslatorBase):
                         , 'result': None
                         }
         resultID = None
+        log = logger(__name__)
         for result in results['results']:
             workerName = result['worker'].split("-",1)[0]
             if 'success' in result.keys() and deviceName == workerName:
                 device_result['duration'] = result['duration']
                 device_result['result'] = cls.unpackBackMessage(result['success'])
                 resultID = result['id']
+        logstring = ""
+        for keys,values in device_result['result'].items():
+            logstring = logstring + str(keys)
+            logstring = logstring + str(values)
+            
+        log.debug("MessageTranslator.convertDart2Python " + 
+            str(device_result['duration']) + " " + 
+            logstring + " " + 
+            str(resultID))
         return device_result, resultID
 
     @classmethod
