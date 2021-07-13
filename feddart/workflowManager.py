@@ -67,8 +67,8 @@ class WorkflowManager:
         @todo specify deviceFile
         """
         self.logger.debug('start feddart server, config:' 
-                            + "runtimeFile " + runtimeFile 
-                            + ",deviceFile " + deviceFile 
+                            + "runtimeFile " + str(runtimeFile) 
+                            + ",deviceFile " + str(deviceFile) 
                             + ",maximal_numberDevices " + str(maximal_numberDevices))
 
         with open(runtimeFile) as runtimeFile:
