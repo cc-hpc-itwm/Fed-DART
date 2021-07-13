@@ -56,14 +56,14 @@ class MessageTranslator(MessageTranslatorBase):
                 device_result['result'] = cls.unpackBackMessage(result['success'])
                 resultID = result['id']
         logstring = ""
-        for keys,values in device_result['result'].items():
-            logstring = logstring + str(keys) + " "
-            logstring = logstring + str(values)
+        if device_result['result'] is not None:
+            logstring = logstring + str(device_result['duration']) + " "
+            logstring = logstring + str(resultID) + " "
+            for keys,values in device_result['result'].items():
+                logstring = logstring + str(keys) + " "
+                logstring = logstring + str(values)
             
-        log.debug("MessageTranslator.convertDart2Python " + 
-            str(device_result['duration']) + " " + 
-            logstring + " " + 
-            str(resultID))
+        log.debug("MessageTranslator.convertDart2Python " + logstring )
         return device_result, resultID
 
     @classmethod
