@@ -57,7 +57,7 @@ class MessageTranslator(MessageTranslatorBase):
                 resultID = result['id']
         logstring = ""
         for keys,values in device_result['result'].items():
-            logstring = logstring + str(keys)
+            logstring = logstring + str(keys) + " "
             logstring = logstring + str(values)
             
         log.debug("MessageTranslator.convertDart2Python " + 
