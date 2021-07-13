@@ -118,7 +118,7 @@ class Selector():
         if not isinstance(newInitTask, InitTask):
             raise ValueError("object is no instance of InitTask")
         self._initTask = newInitTask
-        self.send_initTask_to_newDevices(self._devices)
+        self.send_initTask_to_newDevices(self.devices)
 
     @property
     def aggregators(self):
