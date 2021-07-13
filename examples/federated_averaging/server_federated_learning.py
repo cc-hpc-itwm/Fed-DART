@@ -27,6 +27,13 @@ manager.createInitTask( parameterDict = {"model_structure": global_model.to_json
                       , executeFunction = "init"
                       )
 if args.mode == "test":
+    if os.path.isfile("../serverFile.json"):
+        rt_filepath = "../serverFile.json"
+        device_filepath = "../dummydeviceFile.json"
+    else:
+        rt_filepath = os.environ['FEDDARTPATH'] + "examples/serverFile.json"
+        device_filepath = os.environ['FEDDARTPATH'] + "examples/dummydeviceFile.json"
+        
     manager.startFedDART( runtimeFile = "../serverFile.json" 
                         , deviceFile = "../dummydeviceFile.json"
                         , maximal_numberDevices = 100
