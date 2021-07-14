@@ -10,7 +10,7 @@ from enum import Enum
 from copy import deepcopy
 from feddart.dart import Client, job_status
 from feddart.dummydart import dummyClient, dummy_job_status
-from feddart.logger import logger
+
 from feddart.logServer import LogServer
 class DartRuntime:
     

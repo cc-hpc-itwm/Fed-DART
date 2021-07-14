@@ -1,6 +1,6 @@
 from feddart.abstractDevice import AbstractDeviceBase
 from feddart.taskResult import TaskResult
-
+from feddart.logServer import LogServer
 class DeviceSingle(AbstractDeviceBase):
     """!
     DeviceSingle is the interface to the real pyhsical device.
@@ -40,6 +40,10 @@ class DeviceSingle(AbstractDeviceBase):
             self._initialized = False
         else: 
             self._initialized = True
+
+        self.logger = LogServer(__name__)
+        self.logger.log().info("DeviceSingle " + name + " instantiated")
+        
 
     def __str__(self):
         return self.name

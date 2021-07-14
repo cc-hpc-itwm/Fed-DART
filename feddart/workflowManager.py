@@ -5,7 +5,6 @@ from feddart.initTask import InitTask
 import json
 import time
 
-#from feddart.logger import logger
 
 from feddart.logServer import LogServer
 
@@ -38,14 +37,14 @@ class WorkflowManager:
         self._errorProbability = errorProbability
 
         self.logger = LogServer(__name__, 
-                                console_level = LogServer.INFO, 
+                                console_level = LogServer.WARN, 
                                 file_level = LogServer.DEBUG)
         self.logger.log().info("Workflow manager initiated")
         
 
     @property
     def maxSizeDeviceHolder(self):
-        self.logger.debug("_maxSizeDeviceHolder " + str(self._maxSizeDeviceHolder))
+        self.logger.log().debug("_maxSizeDeviceHolder " + str(self._maxSizeDeviceHolder))
         return self._maxSizeDeviceHolder
     
     @property 
@@ -130,8 +129,10 @@ class WorkflowManager:
                     self.logger.log().debug("TaskStatus " + str(self.TASK_STATUS_IN_PROGRESS))
                     return self.TASK_STATUS_IN_PROGRESS
             except ValueError:
-                self.logger.log().error("getTaskStatus. value error in delete aggregatorbytask")
-                self.logger.log().error(str(locals()))
+                self.logger.log().error(
+                    "workflowManager.getTaskStatus. there is no aggregator that handles task " + 
+                    taskName)
+                self.logger.log().debug(str(locals()))
             
 
     def getServerInformation(self):
@@ -150,8 +151,9 @@ class WorkflowManager:
 
         @return taskResult aggregated result or collected results from devices
         """
-        self.logger.log().debug("getTaskResult. taskName " + str(taskName))
+        self.logger.log().error("WorkflowManager.getTaskResult. taskName " + str(taskName))
         if self.selector.taskInQueue(taskName):
+            self.logger.log().debug(taskName + " still in queue.")
             return []
         else:
             try: 
@@ -160,8 +162,10 @@ class WorkflowManager:
                 if self.getTaskStatus(taskName) == self.TASK_STATUS_FINISHED:
                     self.stopTask(taskName)
             except ValueError: 
-                self.logger.log().error("getTaskResult. value error in delete aggregatorbytask")
-                self.logger.log().error(str(locals()))
+                self.logger.log().error(
+                    "workflowManager.getTaskResult. there is no aggregator that handles task " + 
+                    taskName)
+                self.logger.log().debug(str(locals()))
                 return []
             return taskResult 
 

@@ -1,5 +1,5 @@
 from feddart.task import TaskBase
-from feddart.logger import logger
+from feddart.logServer import LogServer
 
 class SpecificDeviceTask(TaskBase):
     """
@@ -35,8 +35,9 @@ class SpecificDeviceTask(TaskBase):
         self._configFile = configFile
         self._executeFunction = executeFunction
         self._taskName = taskName
-        self.logger = logger(__name__)
-        self.logger.info("SpecificDeviceTask initiated")
+
+        self.logger = LogServer(__name__)
+        self.logger.log().info("SpecificDeviceTask initiated")
         self.checkConfig()
 
     @property
@@ -142,6 +143,7 @@ class SpecificDeviceTask(TaskBase):
         valid = False
         if self._parameterDict is None:
             if self._configFile is None:
+                self.logger.log().error("specificDeviceTask.checkConfig: no config provided")
                 raise ValueError("No configuration provided")
             else:
                 config = self.loadConfigFile()
@@ -151,10 +153,11 @@ class SpecificDeviceTask(TaskBase):
             config['model'] = self._model
             config['taskName'] = self._taskName
             config['filePath'] = self._filePath
+            self.logger.log().debug("specificDeviceTask.checkConfig: " + str(locals()))
 
         # check the configuration
         # todo: define configfile
-        # why we nedd load and write of the config ?
+        # why we nedd load and write of the config ? - might be too large 
         if self._parameterDict is None:
             self.writeConfig( config['taskName']
                             , config['parameters']
@@ -166,6 +169,8 @@ class SpecificDeviceTask(TaskBase):
     
     def getDeviceParameterDict(self, deviceName):
         if deviceName not in self.specificDevices:
+            self.logger.log().error("specificDeviceTask.getDeviceParameterDict: " + 
+                        deviceName + "does not apply for this task")
             raise KeyError("Device with name" + deviceName + " not included in task")
         else:
             return self.parameterDict[deviceName]

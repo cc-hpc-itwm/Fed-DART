@@ -4,7 +4,7 @@ import dill
 import binascii
 import functools
 
-from feddart.logger import logger 
+from feddart.logServer import LogServer
 class MessageTranslatorBase(abc.ABC):
     #different application possible; e.g no compression of message, maximal compression, protobuf/pickle/dill
 
@@ -24,7 +24,7 @@ class MessageTranslatorBase(abc.ABC):
 
 
 class MessageTranslator(MessageTranslatorBase):
-
+    
     def __init__(self):
         pass
 
@@ -32,14 +32,14 @@ class MessageTranslator(MessageTranslatorBase):
     def convertPython2Dart(cls, list_client, list_params):
         """convert default message to dart format and return feasible format"""
         task_list = []
-        log = logger(__name__)
+        logger = LogServer(__name__)
         #TODO: serialize parameters
         logstring = ""
         for client, params in zip(list_client, list_params):
             dict_client = {'location': client, 'parameter': cls.packMessage(params)}
             logstring = logstring + " " + str({'location': client, 'parameter': params})
             task_list.append(dict_client)
-        log.debug("MessageTranslator.convertPython2Dart " + logstring)
+        logger.log().debug("MessageTranslator.convertPython2Dart " + logstring)
         return task_list
         
     @classmethod
@@ -48,7 +48,7 @@ class MessageTranslator(MessageTranslatorBase):
                         , 'result': None
                         }
         resultID = None
-        log = logger(__name__)
+        logger = LogServer(__name__)
         for result in results['results']:
             workerName = result['worker'].split("-",1)[0]
             if 'success' in result.keys() and deviceName == workerName:
@@ -63,7 +63,7 @@ class MessageTranslator(MessageTranslatorBase):
                 logstring = logstring + str(keys) + " "
                 logstring = logstring + str(values)
             
-        log.debug("MessageTranslator.convertDart2Python " + logstring )
+        logger.log().debug("MessageTranslator.convertDart2Python " + logstring )
         return device_result, resultID
 
     @classmethod

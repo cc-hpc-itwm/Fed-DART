@@ -10,8 +10,9 @@ class Singleton(type):
 class LogServer(metaclass=Singleton):
     
     ERROR = logging.ERROR
-    DEBUG = logging.DEBUG
+    WARN = logging.WARN
     INFO = logging.INFO
+    DEBUG = logging.DEBUG
 
     def __init__(self, name, console_level = ERROR, 
                 file_level = INFO, logfile_path = "feddart.log"):
@@ -30,6 +31,7 @@ class LogServer(metaclass=Singleton):
         self._logger = logging.getLogger(name)
         self._logger.addHandler(self._file_handler)
         self._logger.addHandler(self._console_handler)
+        self._logger.setLevel(console_level)
         self.log().info("Log Server initialized")
 
     def log(self):
