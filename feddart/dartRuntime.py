@@ -11,7 +11,7 @@ from copy import deepcopy
 from feddart.dart import Client, job_status
 from feddart.dummydart import dummyClient, dummy_job_status
 from feddart.logger import logger
-
+from feddart.logServer import LogServer
 class DartRuntime:
     
     def __init__( self
@@ -43,8 +43,9 @@ class DartRuntime:
         self._messageTranslator = MessageTranslator()
         self._selector = None
         self._counterJobs = 0 #in our case Jobs = Task
-        self.logger = logger(__name__)
-        self.logger.info('DartRuntime initiated')
+        
+        self.logger = LogServer(__name__)
+        self.logger.log().info("DartRuntime initiated")
     
     @property
     def restAPIClient(self):
@@ -202,6 +203,7 @@ class DartRuntime:
         maxNumberResults = len(self.registeredDevices)
         taskResult = self.restAPIClient.get_job_results(taskName, maxNumberResults, deviceName + ".*")
         resultDevice, resultID = self._messageTranslator.convertDart2Python(taskResult, deviceName)
+        self.logger.log().debug("DartRuntime.get_TaskResult: " +  str(locals()))
         return resultDevice, resultID
 
     def instantiateSelector(self, max_size_deviceHolder):
@@ -235,8 +237,9 @@ class DartRuntime:
         @todo: specify hardwareConfig
         @param initTask instance of class initTask
         """
+        self.logger.log().debug("dartRuntime.addSingleDevice " + str(locals())) 
         if deviceName in self._registeredDevices.keys():
-            self.logger.error("device name already in list: " + deviceName)
+            self.logger.log().error("device name already in list: " + deviceName)
             raise KeyError("device name already in list")
         device = DeviceSingle( name = deviceName
                              , ipAdress = deviceIp
@@ -254,7 +257,7 @@ class DartRuntime:
             device.addTask(initTask.taskName,  initTask.parameterDict)
             device.startTask(initTask)
         #TODO Luca: where to specify port ?!
-        self.logger.info("dartRuntime.addSingleDevice deviceName " + "registered") 
+        self.logger.log().info("dartRuntime.addSingleDevice " + deviceName + " registered") 
 
     def removeDevice(self, deviceName):
         """!
@@ -266,7 +269,7 @@ class DartRuntime:
         @todo good idea to destroy device ?
         """
         if deviceName not in self.registeredDevicesbyName:
-            self.logger.error("device name not in list: " + deviceName)
+            self.logger.log().error("device name not in list: " + deviceName)
             raise KeyError("device name is not in list")
         device = self.getDevice(deviceName)
         self.restAPIClient.remove_workers(device.ipAdress)
@@ -281,7 +284,7 @@ class DartRuntime:
         @return instance of device
         """
         if deviceName not in self.registeredDevicesbyName:
-            self.logger.error("device name not in list: " + deviceName)
+            self.logger.log().error("device name not in list: " + deviceName)
             raise KeyError("device name is not in list")
         return self._registeredDevices[deviceName]
 
@@ -315,7 +318,7 @@ class DartRuntime:
         """
         self.restAPIClient.add_job(name, module_path, method)
         self._counterJobs += 1
-        self.logger.info("added job: " + module_path + " " + 
+        self.logger.log().info("added job: " + module_path + " " + 
                 str(method) + " new #jobs: " + str(self._counterJobs))
         return
         
@@ -328,7 +331,7 @@ class DartRuntime:
         @todo this function can be removed ?!
         """
         self.restAPIClient.add_tasks(jobName, location_and_parameters)
-        self.logger.error("added task: " + jobName + " " + str(location_and_parameters))
+        self.logger.log().error("added task: " + jobName + " " + str(location_and_parameters))
 
         return
         
@@ -341,10 +344,10 @@ class DartRuntime:
         @param parameterList specifies parameters for devices like 
                [{'param1': 0, 'param2': 1}, {'param1': 10, 'param2': 5}]
         """
-        self.logger.info("broadcastTaskToDevices")
+        self.logger.log().debug("broadcastTaskToDevices")
         for deviceName in deviceNamesList:
             if deviceName not in self.registeredDevicesbyName:
-                self.logger.error("broadcastTaskToDevices: " + deviceName + " is not known!")
+                self.logger.log().error("broadcastTaskToDevices: " + deviceName + " is not known!")
                 raise ValueError("Device with name " + deviceName + " is not known!")
         parameterDARTformat = self._messageTranslator.convertPython2Dart(deviceNamesList, parameterList)
         self.restAPIClient.add_tasks(taskName, parameterDARTformat)
@@ -355,7 +358,7 @@ class DartRuntime:
 
         @todo error messages in the moment
         """
-        self.logger.debug("get_ServerInformation " + str(self.runtime.get_server_information()))
+        self.logger.log().debug("get_ServerInformation " + str(self.runtime.get_server_information()))
         return self.restAPIClient.get_server_information()
         
     def stopTask(self, taskName):
@@ -367,7 +370,7 @@ class DartRuntime:
         """
         self._counterJobs -= 1
         self.restAPIClient.stop_job(taskName)
-        self.logger.debug("stopTask " + taskName + " new #jobs: " + str(self._counterJobs))
+        self.logger.log().debug("stopTask " + taskName + " new #jobs: " + str(self._counterJobs))
 
     def stopRuntime(self):
         """!

@@ -6,6 +6,11 @@ import time
 import argparse
 from feddart.workflowManager import WorkflowManager
 import os
+
+from feddart.logger import logger 
+
+log = logger(__name__)
+
 parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
 parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
 parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
@@ -56,14 +61,15 @@ manager.startTask( taskType = 1
 time.sleep(5)
 taskStatus = manager.getTaskStatus("task_one")
 taskResult = manager.getTaskResult("task_one")
-print(taskStatus)
+
+log.info(str(taskStatus))
 for deviceResult in taskResult:
-    print(deviceResult)
+    log.info(str(deviceResult))
 time.sleep(10)
 taskStatus = manager.getTaskStatus("task_one")
-print(taskStatus)
+log.info(str(taskStatus))
 taskResult = manager.getTaskResult("task_one")
 for deviceResult in taskResult:
-    print(deviceResult.resultList)
-    print(deviceResult.duration)
-    print(deviceResult.deviceName)
+    log.info(str(deviceResult.resultList))
+    log.info(str(deviceResult.duration))
+    log.info(str(deviceResult.deviceName))

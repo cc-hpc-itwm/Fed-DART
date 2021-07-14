@@ -40,7 +40,7 @@ class Selector():
         self._taskQueue = []
         self._initTask = initTask
         self.logger = logger(__name__)
-        self.logger.info('Selector initiated')
+        self.logger.debug('Selector initiated')
 
     @property 
     def runtime(self):
@@ -268,7 +268,11 @@ class Selector():
 
         @param taskName string with task name
         """
-        aggregator = self.get_aggregator_of_task(taskName)
+        try:
+            aggregator = self.get_aggregator_of_task(taskName)
+        except ValueError:
+            self.logger.error("value error in delete aggregatorbytask")
+            
         aggregator.stopTask()
         self.deleteAggregator(aggregator)
         self.addTasks2Runtime()
@@ -363,8 +367,9 @@ class Selector():
 
         @param task the task to be scheduled 
         """
-        self.logger.info("add task")
+        self.logger.info("selector. add task to queue")
         if task in self._taskQueue:
+            self.logger.error("selector. task already scheduled")
             raise KeyError("Task already scheduled")
 
         # add task to queue

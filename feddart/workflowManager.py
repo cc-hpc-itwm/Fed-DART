@@ -5,12 +5,12 @@ from feddart.initTask import InitTask
 import json
 import time
 
-from feddart.logger import logger
+#from feddart.logger import logger
 
-
+from feddart.logServer import LogServer
 
 class WorkflowManager:
-    
+
     TASK_STATUS_IN_PROGRESS = "in progess"
     TASK_STATUS_IN_QUEUE = "in queue"
     TASK_STATUS_FINISHED = "finished"
@@ -36,8 +36,12 @@ class WorkflowManager:
         self._initTask = None
         self._testMode = testMode
         self._errorProbability = errorProbability
-        self.logger = logger(__name__)
-        self.logger.info('Workflow manager initiated')
+
+        self.logger = LogServer(__name__, 
+                                console_level = LogServer.INFO, 
+                                file_level = LogServer.DEBUG)
+        self.logger.log().info("Workflow manager initiated")
+        
 
     @property
     def maxSizeDeviceHolder(self):
@@ -54,7 +58,7 @@ class WorkflowManager:
 
     @property
     def maximalNumberOpenJobs(self):
-        self.logger.debug("_maximalNumberOpenJobs " + str(self._maximalNumberOpenJobs))
+        self.logger.log().debug("_maximalNumberOpenJobs " + str(self._maximalNumberOpenJobs))
         return self._maximalNumberOpenJobs
         
     def startFedDART( self
@@ -66,10 +70,7 @@ class WorkflowManager:
         @param deviceFile path to already known devices
         @todo specify deviceFile
         """
-        self.logger.debug('start feddart server, config:' 
-                            + "runtimeFile " + runtimeFile 
-                            + ",deviceFile " + deviceFile 
-                            + ",maximal_numberDevices " + str(maximal_numberDevices))
+        self.logger.log().debug('start feddart server, config: ' + str(locals()))
 
         with open(runtimeFile) as runtimeFile:
             runtime = json.load(runtimeFile)
@@ -94,7 +95,7 @@ class WorkflowManager:
                                                  )
 
     def removeDevice(self, deviceName):
-        self.logger.debug("remove device. deviceName " + str(deviceName))
+        self.logger.log().debug("remove device. deviceName " + str(deviceName))
         self.selector.removeDevice(deviceName)
         
     def _sendTaskRequest(self, task):
@@ -103,7 +104,8 @@ class WorkflowManager:
         the selector decide accept or reject the task
         @param task instance of task
         """
-        self.logger.debug("requestTaskAcceptance")
+        self.logger.log().info("requestTaskAcceptance")
+        self.logger.log().debug(str(locals()))
         return self.selector.requestTaskAcceptance(task)
         
     def getTaskStatus(self, taskName):
@@ -114,21 +116,26 @@ class WorkflowManager:
 
         @return string "in queue", "in progress" or "finished"
         """
-        self.logger.debug("getTaskStatus. task " + str(taskName))
+        self.logger.log().debug("getTaskStatus. task " + str(taskName))
         if self.selector.taskInQueue(taskName):
             return self.TASK_STATUS_IN_QUEUE
         else:
-            aggregator = self.selector.get_aggregator_of_task(taskName)
-            taskFinished = aggregator.isTaskFinished()
-            if taskFinished:
-                self.logger.debug("TaskStatus " + str(self.TASK_STATUS_FINISHED))
-                return self.TASK_STATUS_FINISHED
-            else:
-                self.logger.debug("TaskStatus " + str(self.TASK_STATUS_IN_PROGRESS))
-                return self.TASK_STATUS_IN_PROGRESS
+            try:
+                aggregator = self.selector.get_aggregator_of_task(taskName)
+                taskFinished = aggregator.isTaskFinished()
+                if taskFinished:
+                    self.logger.log().debug("TaskStatus " + str(self.TASK_STATUS_FINISHED))
+                    return self.TASK_STATUS_FINISHED
+                else:
+                    self.logger.log().debug("TaskStatus " + str(self.TASK_STATUS_IN_PROGRESS))
+                    return self.TASK_STATUS_IN_PROGRESS
+            except ValueError:
+                self.logger.log().error("getTaskStatus. value error in delete aggregatorbytask")
+                self.logger.log().error(str(locals()))
+            
 
     def getServerInformation(self):
-        self.logger.debug("get_ServerInformation")
+        self.logger.log().debug("get_ServerInformation")
         return self.selector.runtime.get_ServerInformation()
 
     def getTaskResult( self
@@ -143,14 +150,19 @@ class WorkflowManager:
 
         @return taskResult aggregated result or collected results from devices
         """
-        self.logger.debug("getTaskResult. taskName " + str(taskName))
+        self.logger.log().debug("getTaskResult. taskName " + str(taskName))
         if self.selector.taskInQueue(taskName):
             return []
         else:
-            aggregator = self.selector.get_aggregator_of_task(taskName)
-            taskResult = aggregator.requestAggregation()
-            if self.getTaskStatus(taskName) == self.TASK_STATUS_FINISHED:
-                self.stopTask(taskName)
+            try: 
+                aggregator = self.selector.get_aggregator_of_task(taskName)
+                taskResult = aggregator.requestAggregation()
+                if self.getTaskStatus(taskName) == self.TASK_STATUS_FINISHED:
+                    self.stopTask(taskName)
+            except ValueError: 
+                self.logger.log().error("getTaskResult. value error in delete aggregatorbytask")
+                self.logger.log().error(str(locals()))
+                return []
             return taskResult 
 
     def getAllDeviceNames(self):
@@ -159,7 +171,7 @@ class WorkflowManager:
 
         @return: list of device names
         """
-        self.logger.debug("getAllDeviceNames. deviceNames " + str(self.selector.deviceNames))
+        self.logger.log().debug("getAllDeviceNames. deviceNames " + str(self.selector.deviceNames))
         return self.selector.deviceNames
 
     def stopTask(self, taskName):
@@ -168,14 +180,14 @@ class WorkflowManager:
         Should be done, when the task isn't needed anymore.
         @todo: add it as option to get_TaskResult ?!
         """
-        self.logger.debug("stopTask. taskName " + str(taskName))
+        self.logger.log().info("stopTask. taskName " + str(taskName))
         if self.selector.taskInQueue(taskName):
             self.selector.deleteTaskInQueue(taskName)
         else:
             self.selector.deleteAggregatorAndTask(taskName)
             
     def stopFedDART(self):
-        self.logger.debug("stopFedDART")
+        self.logger.log().info("stopFedDART")
         self.runtime.stopRuntime()
     
     def createInitTask( self
@@ -186,13 +198,7 @@ class WorkflowManager:
                       , executeFunction = None
                       , configFile = None
                       ):
-        self.logger.debug("createInitTask. " + 
-                    ",parameterDict " + str(parameterDict) + 
-                    ",model " + str(model) + 
-                    ",hardwareRequirements " + str(hardwareRequirements) + 
-                    ",filePath " + str(filePath) + 
-                    ",executeFunction " + str(executeFunction) + 
-                    ",configFile " + str(configFile))
+        self.logger.log().debug("createInitTask. " + str(locals()))
         task = InitTask( parameterDict
                        , model
                        , hardwareRequirements
@@ -217,14 +223,6 @@ class WorkflowManager:
         """!
         @param executeFunction name of function, which should be executed in filePath
         """
-        self.logger.debug("startTask. taskName " + taskName + 
-                    ",parameterDict " + str(parameterDict) + 
-                    ",model " + str(model) + 
-                    ",hardwareRequirements " + str(hardwareRequirements) + 
-                    ",filePath " + str(filePath) + 
-                    ",executeFunction " + str(executeFunction) + 
-                    ",configFile " + str(configFile) + 
-                    ",numDevices " + str(numDevices))
         # defaultTask
         if taskType == 0:
             task = DefaultTask( taskName
@@ -250,8 +248,9 @@ class WorkflowManager:
         #task accepted
         if request_status:
             self.selector.addTask2Queue(task, priority)
-            self.logger.info("task accepted")
+            self.logger.log().info("task accepted")
         # task rejected
         else: 
-            self.logger.info("task was not accepted - change your constraints?")
+            self.logger.log().info("task was not accepted - change your constraints?")
+        self.logger.log().debug("start task." + str(locals()))
         return request_status

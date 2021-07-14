@@ -1,5 +1,4 @@
 from feddart.messageTranslator import feddart
-import tensorflow as tf
 import os
 import numpy as np 
 from tensorflow import keras 
@@ -7,7 +6,7 @@ from tensorflow.keras.utils import to_categorical
 MODEL_NAME = "client_model"
 
 def get_mnist_train_data():
-    raw_data = tf.keras.datasets.mnist.load_data()
+    raw_data = keras.datasets.mnist.load_data()
     x_train = raw_data[0][0] / 255 - 0.5
     y_train = to_categorical(raw_data[0][1])
     x_train = x_train.reshape((-1, 28 * 28))

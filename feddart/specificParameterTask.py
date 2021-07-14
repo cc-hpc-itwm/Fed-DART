@@ -1,6 +1,6 @@
 from feddart.task import TaskBase
 
-
+from feddart.logger import logger
 '''
 As specific device task, we define to execute a given task with (possibly)
 different parameter settings (training, etc) on the devices that 
@@ -21,6 +21,8 @@ class SpecificParameterTask(TaskBase):
         self._configFile = configFile
         self._filePath = filePath
         self._taskName = taskName
+        self.logger = logger(__name__)
+        self.logger.info("SpecificParameterTask initiated")
         self.checkConfig()
 
     @property

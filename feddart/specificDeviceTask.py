@@ -1,5 +1,5 @@
 from feddart.task import TaskBase
-
+from feddart.logger import logger
 
 class SpecificDeviceTask(TaskBase):
     """
@@ -35,6 +35,8 @@ class SpecificDeviceTask(TaskBase):
         self._configFile = configFile
         self._executeFunction = executeFunction
         self._taskName = taskName
+        self.logger = logger(__name__)
+        self.logger.info("SpecificDeviceTask initiated")
         self.checkConfig()
 
     @property

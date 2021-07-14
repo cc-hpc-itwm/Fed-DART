@@ -2,7 +2,7 @@ import logging
 
 def logger(name):
     file_formatter = logging.Formatter('%(asctime)s~%(levelname)s~%(message)s~module:%(module)s~function:%(module)s')
-    console_formatter = logging.Formatter('%(levelname)s -- %(message)s')
+    console_formatter = logging.Formatter('%(asctime)s~%(levelname)s -- %(message)s')
     
     file_handler = logging.FileHandler("feddart.log")
     file_handler.setLevel(logging.DEBUG)
@@ -14,5 +14,5 @@ def logger(name):
     logger = logging.getLogger(name)
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
     return logger

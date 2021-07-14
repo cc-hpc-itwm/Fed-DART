@@ -1,5 +1,6 @@
 from feddart.task import TaskBase
 
+from feddart.logger import logger
 '''
 
 '''
@@ -39,7 +40,8 @@ class DefaultTask(TaskBase):
         self._configFile = configFile
         self._filePath = filePath
         self._taskName = taskName
-
+        self.logger = logger(__name__)
+        self.logger.info("DefaultTask initiated")
         self.checkConfig()
 
     @property
@@ -218,6 +220,7 @@ class DefaultTask(TaskBase):
                             , config['model'] 
                             , config['filePath'] )
 
+        self.logger.info("check config: " +  str(locals()))
         return valid
 
 if __name__ == '__main__':

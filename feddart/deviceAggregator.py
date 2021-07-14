@@ -52,7 +52,7 @@ class DeviceAggregator(AggregatorBase):
             self.addSingleDevice(device) #add here task to devices
 
         self.logger = logger(__name__)
-        self.logger.info('Aggregator initiated')
+        self.logger.debug('Aggregator initiated')
 
 #--------------------------------------------        
     @property
