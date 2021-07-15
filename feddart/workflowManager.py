@@ -136,8 +136,9 @@ class WorkflowManager:
             
 
     def getServerInformation(self):
-        self.logger.log().debug("get_ServerInformation")
-        return self.selector.runtime.get_ServerInformation()
+        serverinfo = self.selector.runtime.get_ServerInformation()
+        self.logger.log().debug("WorkflowManager.get_ServerInformation: " +  str(locals()))
+        return serverinfo
 
     def getTaskResult( self
                      , taskName
@@ -151,7 +152,7 @@ class WorkflowManager:
 
         @return taskResult aggregated result or collected results from devices
         """
-        self.logger.log().error("WorkflowManager.getTaskResult. taskName " + str(taskName))
+        self.logger.log().info("WorkflowManager.getTaskResult. taskName " + str(taskName))
         if self.selector.taskInQueue(taskName):
             self.logger.log().debug(taskName + " still in queue.")
             return []

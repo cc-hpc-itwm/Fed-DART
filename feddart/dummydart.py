@@ -5,6 +5,7 @@ import random
 import time
 import os
 
+### obsolete - already in dart ###
 class dummy_job_status(Enum):
     """! 
     Same class as class job_status in dart.py
@@ -177,6 +178,7 @@ class dummyClient:
          The dummyClient class handles this setting with the same
          API of a real dart server.
     """
+    #### merged ###
     def __init__(self, server, client_key, probability_error):
         """!
         @param server not needed
@@ -192,6 +194,7 @@ class dummyClient:
         self.worker_list = []
         self.job_list = []
 		
+    #### merged ###
     def getJob(self, jobName):
         """!
             Get the job instance by name
@@ -201,16 +204,19 @@ class dummyClient:
                return job
         return None
 	
+    ### merged ###
     def stop_servers(self):
         if random.uniform(0,1) < self.probability_error:
             raise Exception('response not ok')
-			
+	
+    ### merged ###	
     def get_server_information(self):
         """!
         at the moment not supported by real dart server
         """
         raise NotImplementedError("not implemented yet!")
 
+    ### merged ###
     def get_workers(self):
         list_worker = []
         for worker in self.worker_list:
@@ -221,6 +227,7 @@ class dummyClient:
             list_worker.append(dict_worker)
         return {'workers': list_worker}
 
+    ### merged ###
     def add_workers( self
                    , hosts
                    , workers_per_host
@@ -248,6 +255,7 @@ class dummyClient:
         if random.uniform(0,1) < self.probability_error:
                 raise Exception('response not ok')
 
+    ### merged ###
     def remove_workers(self, hosts, ssh = {}):
         """!
         @param hosts name of host
@@ -258,6 +266,7 @@ class dummyClient:
         if random.uniform(0,1) < self.probability_error:
             raise Exception('response not ok')
 
+    ### merged ###
     def add_job(self, name, module_path, method):
         """!
         Create instance of Job and add it to job list.
@@ -273,6 +282,7 @@ class dummyClient:
         if random.uniform(0,1) < self.probability_error:
             raise Exception('response not ok')
 
+    ### merged ###
     def add_tasks(self, jobName, location_and_parameters):
         """!
         Add task to existing job.Afterwards execute the task
@@ -293,10 +303,12 @@ class dummyClient:
             raise Exception('response not ok')
         else:
             rightJob.start_computation()
-			 
+
+    ### merged ### 
     def get_job_info(self, job):
         raise NotImplementedError("not implemented yet!")
 			
+    ### merged ###
     def stop_job(self, jobName):
         """!
         Stops a job
@@ -307,6 +319,7 @@ class dummyClient:
         if random.uniform(0, 1) < self.probability_error:
             raise Exception('response not ok')
 	
+    ### merged ###
     def get_job_status(self, jobName):
         """!
         Gets the status of a job
@@ -323,6 +336,7 @@ class dummyClient:
         else:
             return dummy_job_status(1)
 	
+    ### merged ###
     def get_job_results(self, jobName, amount, worker_regex = ""):
         """!
         At the moment we return all results of a job. From a point of performance that's 

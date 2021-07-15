@@ -6,8 +6,10 @@ import numpy as np
 from copy import copy
 from src import utils
 
+from feddart.logServer import LogServer
 class Parser(object):
     def __init__(self):
+
         parser = argparse.ArgumentParser("FED-DART")
 
         parser.add_argument('--data', type=str, default='./data', help='data path. default: %(default)s')

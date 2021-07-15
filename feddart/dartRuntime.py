@@ -9,7 +9,6 @@ import json
 from enum import Enum
 from copy import deepcopy
 from feddart.dart import Client, job_status
-from feddart.dummydart import dummyClient, dummy_job_status
 
 from feddart.logServer import LogServer
 class DartRuntime:
@@ -34,7 +33,7 @@ class DartRuntime:
         @param counterJobs int number of open jobs on server
         """
         if testMode:
-            self._restAPIClient = dummyClient(server, client_key, errorProbability)
+            self._restAPIClient = Client(server, client_key, probability_error = errorProbability, testmode = True)
         else:
             self._restAPIClient = Client(server, client_key)
         self._maximal_number_devices = maximal_number_devices
@@ -300,9 +299,9 @@ class DartRuntime:
         """
         jobStatus = self.restAPIClient.get_job_status(jobName)
         #TODO: ask Luca why return is job_status.unknown
-        if jobStatus == job_status.unknown or jobStatus == dummy_job_status.unknown:
+        if jobStatus == job_status.unknown:
             return 0
-        elif jobStatus == job_status.stopped or jobStatus == dummy_job_status.stopped:
+        elif jobStatus == job_status.stopped:
             return 2
         else: 
             return 1
