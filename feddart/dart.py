@@ -21,7 +21,7 @@ class Client:
         self.server = server
         self.key = client_key
         self.logger = LogServer(__name__)
-        self.logger.log().error("dart client initialized")
+        self.logger.log().info("dart client initialized")
         self.testmode = testmode
 
         if self.testmode:
@@ -34,9 +34,12 @@ class Client:
         """!
             Get the job instance by name - used in testmode
         """
+        self.logger.log().info("Client.getJob: " + jobName)
         for job in self.job_list:
             if job.name == jobName:
                return job
+
+        self.logger.log().info("Client.getJob: " + jobName + " not found")
         return None
 
     ##
@@ -45,6 +48,7 @@ class Client:
         """!
         testmode: simulate false request codes 
         """
+        self.logger.log().info("Client.stop_servers")
         if self.testmode:
             if random.uniform(0,1) < self.probability_error:
                 raise Exception('response not ok')
@@ -83,7 +87,8 @@ class Client:
     # @param shm_size         shared memory size
     # @param ssh_options      an object with the following attributes 
     #                         { "username": "...", "port": "...", "public-key": "...", "private-key": "..." }
-    def add_workers(self, hosts, workers_per_host, worker_name, capabilities, shm_size, ssh = {}):
+    def add_worker(self, hosts, workers_per_host, worker_name, capabilities, shm_size, ssh = {}):
+        self.logger.log().debug("Client.add_worker " + str(locals()))
         if self.testmode:
             #capabilities, hosts is a list, unzip it
             for host, capability in zip(hosts, capabilities):
@@ -96,7 +101,8 @@ class Client:
                             )
                 self.worker_list.append(worker)
             if random.uniform(0,1) < self.probability_error:
-                    raise Exception('response not ok')
+                self.logger.log().error("Client.add_worker: could not add worker " + str(locals()))
+                raise Exception('response not ok')
         else:
             r = requests.post(self.server + "/worker/", json={
                 'key': self.key
@@ -108,6 +114,7 @@ class Client:
                 , 'ssh': ssh
             }, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.add_worker: could not add worker " + str(locals()))
                 raise Exception('response not ok')
 
     ##

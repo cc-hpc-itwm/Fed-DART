@@ -251,7 +251,7 @@ class DartRuntime:
                              )
         self._registeredDevices[deviceName] = device
         #add workers is blocking!
-        self.restAPIClient.add_workers( [deviceIp], 1, deviceName, [""],0,{})
+        self.restAPIClient.add_worker( [deviceIp], 1, deviceName, [""],0,{})
         if initTask is not None:
             device.addTask(initTask.taskName,  initTask.parameterDict)
             device.startTask(initTask)
