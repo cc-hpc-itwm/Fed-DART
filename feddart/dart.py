@@ -123,11 +123,13 @@ class Client:
     # @param hosts a list of hosts
     # @param ssh_options      an object with the following attributes { "username": "...", "port": "...", "public-key": "...", "private-key": "..." }
     def remove_workers(self, hosts, ssh = {}):
+        self.logger.log().debug("Client.remove_workers " + str(locals()))
         if self.testmode:
             for worker in self.worker_list:
                 if worker.hosts == hosts:
                     self.worker_list.remove(worker) 
             if random.uniform(0,1) < self.probability_error:
+                self.logger.log().error("Client.remove_workers: could not remove workers " + str(locals()))
                 raise Exception('response not ok')
         else:
             r = requests.delete(self.server + "/worker/", json={
@@ -136,6 +138,7 @@ class Client:
                 , 'ssh': ssh
             }, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.remove_workers: could not remove workers " + str(locals()))
                 raise Exception('response not ok')
 
 
@@ -148,6 +151,7 @@ class Client:
     # @param capabilities     list of the capabilities of the workers
     # @param shm_size         shared memory size
     def get_workers(self):
+        self.logger.log().debug("Client.get_workers " + str(locals()))
         if self.testmode:
             list_worker = []
             for worker in self.worker_list:
@@ -156,12 +160,15 @@ class Client:
                 dict_worker['count'] = 1
                 dict_worker['capabilities'] = ''
                 list_worker.append(dict_worker)
+
+            self.logger.log().debug("Client.get_workers: " + str(list_worker))
             return {'workers': list_worker}
         else: 
             r = requests.get(self.server + "/worker/", json={
                 'key': self.key
             }, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.get_workers: " + str(locals()))
                 raise Exception('response not ok')
             return json.loads(r.content)
 
@@ -172,6 +179,7 @@ class Client:
     # @param module_path the path to the module on the clients
     # @param method      the method from the module to execute
     def add_job(self, name, module_path, method):
+        self.logger.log().debug("Client.add_job " + str(locals()))
         if self.testmode:
             job = Job( name
                  , module_path
@@ -179,6 +187,7 @@ class Client:
                  )
             self.job_list.append(job)
             if random.uniform(0,1) < self.probability_error:
+                self.logger.log().error("Client.add_job: could not add job. " + str(locals()))
                 raise Exception('response not ok')
         else:        
             r = requests.post(self.server + "/job/", json={
@@ -188,14 +197,16 @@ class Client:
             , 'method' : method
             }, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.add_job: could not add job. " + str(locals()))
                 raise Exception('response not ok')
 
     ##
-    # Adds tasks to a job
+    # Adds tasks to a specific job
     #
     # @param jobName              the name of the job
     # @param location_and_parameters [ { 'location' : '...', 'parameter' : ' ...'}, ...] list
     def add_tasks(self, jobName, location_and_parameters):
+        self.logger.log().debug("Client.add_tasks " + str(locals()))
         if self.testmode:
             rightJob = self.getJob(jobName)
             for task in location_and_parameters:
@@ -207,16 +218,20 @@ class Client:
                                 , taskParameter
                                 )      
                         rightJob.task_list.append(task)
+
             if random.uniform(0, 1) < self.probability_error:
+                self.logger.log().error("Client.add_tasks: could not add tasks. " + str(locals()))
                 raise Exception('response not ok')
             else:
                 rightJob.start_computation()
+
         else:    
             r = requests.post(self.server + "/job/" + jobName + "/tasks/", json={
                 'key': self.key
             , 'location_and_parameters' : location_and_parameters
             }, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.add_tasks: could not add tasks. " + str(locals()))
                 raise Exception('response not ok')
 
     ##
@@ -239,11 +254,14 @@ class Client:
     #
     # @param job  the name of the job
     def get_job_info(self, jobName):
+        self.logger.log().debug("Client.get_job_info " + str(locals()))
         if self.testmode:
+            self.logger.log().error("Client.get_job_info: not implemented.")
             raise NotImplementedError("not implemented yet!")
         else:
             r = requests.get(self.server + "/job/" + jobName + "/", json={'key': self.key}, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.get_job_info: " + str(locals()))
                 raise Exception('response not ok')
             return json.loads(r.content)
         
@@ -252,14 +270,17 @@ class Client:
     #
     # @param job the job name
     def stop_job(self, jobName):
+        self.logger.log().debug("Client.stop_job " + str(locals()))
         if self.testmode:
             rightJob = self.getJob(jobName)
             self.job_list.remove(rightJob)
             if random.uniform(0, 1) < self.probability_error:
+                self.logger.log().error("Client.stop_job failed. " + str(locals()))
                 raise Exception('response not ok')
         else:
             r = requests.delete(self.server + "/job/" + jobName + "/", json={'key': self.key}, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.stop_job failed. " + str(locals()))
                 raise Exception('response not ok')
     
     ##
@@ -267,6 +288,7 @@ class Client:
     #
     # @return the job status
     def get_job_status(self, jobName):
+        self.logger.log().debug("Client.get_job_status " + str(locals()))
         if self.testmode:
             job_exists = False
             for job in self.job_list:
@@ -276,6 +298,7 @@ class Client:
             if job_exists == False:
                 return job_status(0)
             if random.uniform(0, 1) < self.probability_error:
+                self.logger.log().error("Client.get_job_status " + str(locals()))
                 raise Exception('response not ok')
             else:
                 return job_status(1)
@@ -284,6 +307,7 @@ class Client:
             if r.status_code == requests.codes.not_found:
                 return job_status.unknown
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.get_job_status " + str(locals()))
                 raise Exception('response not ok')
             response = json.loads(r.content)
             return job_status(int(response['job']['status']))
@@ -319,9 +343,11 @@ class Client:
     # @param amount       the maximal amounts of jobs to get
     # @param worker_regex a regex that the worker of the result has to match. Empty regex matches everything.
     def get_job_results(self, jobName, amount, worker_regex = ""):
+        self.logger.log().debug("Client.get_job_results " + str(locals()))
         if self.testmode:
             rightJob = self.getJob(jobName)
             if random.uniform(0, 1) < self.probability_error:
+                self.logger.log().error("Client.get_job_results " + str(locals()))
                 raise Exception('response not ok')
             if rightJob:
                 return rightJob.resultDict
@@ -335,6 +361,7 @@ class Client:
             , 'worker_regex' : worker_regex
             }, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.get_job_results " + str(locals()))
                 raise Exception('response not ok')
             return json.loads(r.content)
     
@@ -344,13 +371,16 @@ class Client:
     # @param job    the name of the job
     # @param result the id of the result
     def delete_job_result(self, jobName, resultID):
+        self.logger.log().debug("Client.delete_job_result " + str(locals()))
         if self.testmode:
             rightJob = self.getJob(jobName)
             rightJob.delete(resultID)
             if random.uniform(0, 1) < self.probability_error:
+                self.logger.log().error("Client.delete_job_result " + str(locals()))
                 raise Exception('response not ok')
         else:
             r = requests.delete(self.server + "/job/" + jobName + "/results/" + resultID +"/" , 
                                 json={'key': self.key}, verify=False)
             if r.status_code != requests.codes.ok:
+                self.logger.log().error("Client.delete_job_result " + str(locals()))
                 raise Exception('response not ok')
