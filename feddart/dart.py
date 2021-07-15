@@ -352,7 +352,7 @@ class Client:
             if rightJob:
                 return rightJob.resultDict
             else:
-                print("no such an job is running on server")
+                self.logger.log().info("Client.get_job_results: no such job running on server: " + jobName)
                 return {'results': [], 'job':{}}
         else:
             r = requests.get(self.server + "/job/" + jobName + "/results/", json={
