@@ -13,6 +13,7 @@ class LogServer(metaclass=Singleton):
     WARN = logging.WARN
     INFO = logging.INFO
     DEBUG = logging.DEBUG
+    FATAL = logging.FATAL
 
     def __init__(self, name, console_level = ERROR, 
                 file_level = INFO, logfile_path = "feddart.log"):

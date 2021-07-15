@@ -10,19 +10,7 @@ import os
 from feddart.logServer import LogServer
 
 
-
-parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
-parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
-parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
-args = parser.parse_args()
-if args.mode == "test":
-    manager = WorkflowManager( testMode = True
-                             , errorProbability = int(args.errorProbability)
-                             )
-elif args.mode == "real":
-    manager = WorkflowManager()
-else:
-    raise ValueError("Wrong options for example")
+manager = WorkflowManager()
 
 logger = LogServer(__name__)
 #inittask is an optional task, which must be executed on each client for initialization
@@ -30,7 +18,7 @@ manager.createInitTask( parameterDict = {"init_var": 'hello'}
                       , filePath = "hello_world_client"
                       , executeFunction = "init"
                       )
-if args.mode == "test":
+if manager.config.mode == "test":
     if os.path.isfile("../serverFile.json"):
         rt_filepath = "../serverFile.json"
         device_filepath = "../dummydeviceFile.json"

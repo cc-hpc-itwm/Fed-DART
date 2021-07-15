@@ -5,9 +5,8 @@ from feddart.initTask import InitTask
 import json
 import time
 
-
 from feddart.logServer import LogServer
-
+from feddart.args import Helper
 class WorkflowManager:
 
     TASK_STATUS_IN_PROGRESS = "in progess"
@@ -15,8 +14,6 @@ class WorkflowManager:
     TASK_STATUS_FINISHED = "finished"
 
     def __init__( self
-                , testMode = False
-                , errorProbability = 0
                 , maxSizeDeviceHolder = 10
                 , maximalNumberOpenJobs = 10
                 ):
@@ -33,20 +30,37 @@ class WorkflowManager:
         self._maxSizeDeviceHolder = maxSizeDeviceHolder
         self._maximalNumberOpenJobs = maximalNumberOpenJobs
         self._initTask = None
-        self._testMode = testMode
-        self._errorProbability = errorProbability
+
+        helper = Helper()
+        self._args = helper.config
+
+        self._testMode = self._args.mode
+        self._errorProbability = int(self._args.errorProbability)
+        
+        loglevel = LogServer.WARN
+        if int(self._args.logLevel) == 0:
+            loglevel = LogServer.DEBUG
+        elif int(self._args.logLevel) == 1:
+            loglevel = LogServer.INFO
+        elif int(self._args.logLevel) == 3:
+            loglevel = LogServer.ERROR
+        else:
+            loglevel = LogServer.FATAL
 
         self.logger = LogServer(__name__, 
-                                console_level = LogServer.WARN, 
+                                console_level = loglevel, 
                                 file_level = LogServer.DEBUG)
         self.logger.log().info("Workflow manager initiated")
-        
 
     @property
     def maxSizeDeviceHolder(self):
         self.logger.log().debug("_maxSizeDeviceHolder " + str(self._maxSizeDeviceHolder))
         return self._maxSizeDeviceHolder
-    
+
+    @property 
+    def config(self):
+        return self._args
+
     @property 
     def runtime(self):
         return self._runtime
