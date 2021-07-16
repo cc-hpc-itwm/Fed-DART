@@ -83,6 +83,7 @@ class WorkflowManager:
         @param deviceFile path to already known devices
         @todo specify deviceFile
         """
+
         self.logger.log().debug('start feddart server, config: ' + str(locals()))
 
         with open(runtimeFile) as runtimeFile:
