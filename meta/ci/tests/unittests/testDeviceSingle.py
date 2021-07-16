@@ -7,6 +7,7 @@ parentdir = os.path.dirname(currentdir)
 parentdir = os.path.dirname(parentdir)
 parentdir = os.path.dirname(parentdir)
 parentdir = os.path.dirname(parentdir)
+print(parentdir)
 sys.path.insert(0, parentdir) 
 from feddart.deviceSingle import DeviceSingle
 from feddart.dartRuntime import DartRuntime
@@ -48,131 +49,6 @@ class TestDeviceSingle(unittest.TestCase):
       
     def tearDown(self):
         pass
-    
-    def testAddTask(self):
-        "Add tasks to openTaskDict. If task is already existing through an exception"
-        taskName = "task_one"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        self.deviceSingle.addTask(taskName, taskParameter)
-        self.assertEqual( self.deviceSingle.openTaskDict
-                        , {'task_one': {'param1': 'hello', 'param2': 'world'}}
-                        , msg = "Wrong dict entries for openTaskDict"
-                        )
-        taskName = "task_one"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        with self.assertRaises(Exception) as context:
-            self.deviceSingle.addTask(taskName, taskParameter)
-        self.assertTrue("already in openTaskDict!" in str(context.exception))
-        taskName = "task_two"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        self.deviceSingle.addTask(taskName, taskParameter)
-        self.assertEqual( self.deviceSingle.openTaskDict
-                        , { 'task_one': {'param1': 'hello', 'param2': 'world'}
-                          , 'task_two': {'param1': 'hello', 'param2': 'world'}
-                          }
-                        , msg = "Wrong dict entries for openTaskDict"
-                        )
-    
-    def testAddFinishedTask(self):
-        "Add tasks to finishedTaskDict. If task is already existing through an exception"
-        taskName = "task_one"
-        taskResult = { 'duration': 5
-                     , 'result': {'result_0': 10, 'result_1': None}
-                     }
-        self.deviceSingle._addFinishedTask(taskName, taskResult)
-        self.assertEqual( self.deviceSingle.finishedTaskDict
-                        , {'task_one': taskResult}
-                        , msg = "Wrong dict entries for finishedTaskDict"
-                        )
-        taskName = "task_one"
-        with self.assertRaises(Exception) as context:
-            self.deviceSingle._addFinishedTask(taskName, taskResult)
-        self.assertTrue("already in finishedTaskDict!" in str(context.exception))
-        taskName = "task_two"
-        self.deviceSingle._addFinishedTask(taskName, taskResult)
-        self.assertEqual( self.deviceSingle.finishedTaskDict
-                        , { 'task_one': taskResult
-                          , 'task_two': taskResult
-                          }
-                        , msg = "Wrong dict entries for finishedTaskDict"
-                        )
-    
-    def testisOpenTask(self):
-        "Check if taskName is in openTaskDict"
-        taskName = "task_one"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        self.deviceSingle.addTask(taskName, taskParameter)
-        self.assertTrue( self.deviceSingle.isOpenTask("task_one") == True
-                       , msg = "Task should be an open task"
-                       )
-        self.assertTrue( self.deviceSingle.isOpenTask("task_two") == False
-                       , msg = "Task should be not an open task"
-                       )
-
-    
-    def testRemoveOpenTask(self):
-        "Try to remove tasks from openTaskDict"
-        taskName = "task_one"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        self.deviceSingle.addTask(taskName, taskParameter)
-        taskName = "task_two"
-        self.deviceSingle.addTask(taskName, taskParameter)
-        self.deviceSingle.removeOpenTask("task_one")
-        self.assertTrue( self.deviceSingle.isOpenTask("task_one") == False
-                       , msg = "Task should not be an open task"
-                       )
-        self.assertEqual( self.deviceSingle.openTaskDict
-                        , {'task_two': {'param1': 'hello', 'param2': 'world'}}
-                        , msg = "Wrong dict entries for openTaskDict"
-                        )
-
-    def testGetOpenTaskParameter(self):
-        "Get the parameter of an open task"
-        taskName = "task_one"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        self.deviceSingle.addTask(taskName, taskParameter)
-        self.assertEqual( self.deviceSingle.getOpenTaskParameter("task_one")
-                        , {'param1': 'hello', 'param2': 'world'}
-                        , msg = "Wrong parameter for task!"
-                        )
-        with self.assertRaises(Exception) as context:
-            self.deviceSingle.getOpenTaskParameter("task_twp")
-        self.assertTrue("Open task with name" in str(context.exception))
-    
-    def testGetFinishedTaskResult(self):
-        "Get the result of a finished task"
-        taskName = "task_one"
-        taskResult = { 'duration': 5
-                     , 'result': {'result_0': 10, 'result_1': None}
-                     }
-        self.deviceSingle._addFinishedTask(taskName, taskResult)
-        self.assertEqual( self.deviceSingle._getFinishedTaskResult("task_one")
-                        , taskResult
-                        , msg = "Wrong results for task!"
-                        )
-        with self.assertRaises(Exception) as context:
-            self.deviceSingle._getFinishedTaskResult("task_two")
-        self.assertTrue("Finished task with name" in str(context.exception))
-
-    def testHasTask(self):
-        "Check if the device has a task with such an name in open or finished tasks"
-        taskName = "task_one"
-        taskParameter = {"param1": "hello", "param2": "world"}
-        self.deviceSingle.addTask(taskName, taskParameter)
-        taskName = "task_two"
-        taskResult = { 'duration': 5
-                     , 'result': {'result_0': 10, 'result_1': None}
-                     }
-        self.deviceSingle._addFinishedTask(taskName, taskResult)
-        self.assertTrue( self.deviceSingle.hasTask("task_one") == True
-                       , msg = "Device should have task"
-                       )
-        self.assertTrue( self.deviceSingle.hasTask("task_two") == True
-                       , msg = "Device should have task"
-                       )
-        self.assertTrue( self.deviceSingle.hasTask("task_three") == False
-                       , msg = "Device should not have task"
-                       )
     
     def testInitTask(self):
         "Check if the init task is executed"
