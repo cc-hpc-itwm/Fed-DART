@@ -216,7 +216,7 @@ class DartRuntime:
         return self._selector
 
     
-    def addSingleDevice( self
+    def generate_and_add_SingleDevice( self
                        , deviceName
                        , deviceIp
                        , port
@@ -236,7 +236,7 @@ class DartRuntime:
         @todo: specify hardwareConfig
         @param initTask instance of class initTask
         """
-        self.logger.log().debug("dartRuntime.addSingleDevice " + str(locals())) 
+        self.logger.log().debug("dartRuntime.generate_and_add_SingleDevice " + str(locals())) 
         if deviceName in self._registeredDevices.keys():
             self.logger.log().error("device name already in list: " + deviceName)
             raise KeyError("device name already in list")
@@ -256,7 +256,7 @@ class DartRuntime:
             device.addTask(initTask.taskName,  initTask.parameterDict)
             device.startTask(initTask)
         #TODO Luca: where to specify port ?!
-        self.logger.log().info("dartRuntime.addSingleDevice " + deviceName + " registered") 
+        self.logger.log().info("dartRuntime.generate_and_add_SingleDevice " + deviceName + " registered") 
 
     def removeDevice(self, deviceName):
         """!

@@ -12,7 +12,7 @@ def deviceSingle():
     server = "https://127.0.0.0.1:7777"
     client_key = "000"
     error_probability = 0
-    dartRuntime = DartRuntime(server, client_key, error_probability, True)
+    dartRuntime = DartRuntime(server, client_key, True, error_probability)
     name = "device_one"
     ipAdress = "client1"
     port = 2883

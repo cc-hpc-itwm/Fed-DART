@@ -195,7 +195,7 @@ class Selector():
                             + ",hardwareConfig " + str(hardwareConfig)
                             )           
         initTask = self.initTask
-        self.runtime.addSingleDevice( deviceName
+        self.runtime.generate_and_add_SingleDevice( deviceName
                                     , ipAdress
                                     , port
                                     , hardwareConfig

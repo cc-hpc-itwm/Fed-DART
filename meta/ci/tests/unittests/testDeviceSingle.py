@@ -69,7 +69,7 @@ class TestDeviceSingle(unittest.TestCase):
                        )
         self.deviceSingle._initialized = False
         self.deviceSingle.initTask = task
-        self.dartRuntime.addSingleDevice( self.deviceSingle.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceSingle.name
                                         , self.deviceSingle.ipAdress
                                         , self.deviceSingle.port 
                                         , self.deviceSingle.hardwareConfig

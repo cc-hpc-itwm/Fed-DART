@@ -68,13 +68,13 @@ class TestDeviceAggregator(unittest.TestCase):
                                      , taskDict = {}
                                      , initTask = None
                                      )
-        self.dartRuntime.addSingleDevice( self.deviceOne.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceOne.name
                                         , self.deviceOne.ipAdress
                                         , self.deviceOne.port 
                                         , self.deviceOne.hardwareConfig
                                         , self.deviceOne.initTask
                                         )
-        self.dartRuntime.addSingleDevice( self.deviceTwo.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceTwo.name
                                         , self.deviceTwo.ipAdress
                                         , self.deviceTwo.port 
                                         , self.deviceTwo.hardwareConfig
