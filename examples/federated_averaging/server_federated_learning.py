@@ -4,6 +4,8 @@ from feddart.workflowManager import WorkflowManager
 import numpy as np
 import argparse
 import time 
+import os
+
 parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
 parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
 parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
@@ -34,8 +36,8 @@ if args.mode == "test":
         rt_filepath = os.environ['FEDDARTPATH'] + "examples/serverFile.json"
         device_filepath = os.environ['FEDDARTPATH'] + "examples/dummydeviceFile.json"
         
-    manager.startFedDART( runtimeFile = "../serverFile.json" 
-                        , deviceFile = "../dummydeviceFile.json"
+    manager.startFedDART(runtimeFile = rt_filepath
+                        , deviceFile = device_filepath
                         , maximal_numberDevices = 100
                         )
 else: 

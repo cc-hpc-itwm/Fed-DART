@@ -2,7 +2,7 @@ from feddart.deviceAggregator import DeviceAggregator
 from feddart.initTask import InitTask
 from feddart.deviceHolder import DeviceHolder
 
-from feddart.logger import logger
+from feddart.logServer import LogServer
 class Selector():
     """! 
     Selector has the knowledge about all connected devices.
@@ -39,8 +39,8 @@ class Selector():
         self._device_holders = []
         self._taskQueue = []
         self._initTask = initTask
-        self.logger = logger(__name__)
-        self.logger.info('Selector initiated')
+        self.logger = LogServer(__name__)
+        self.logger.log().info('Selector initiated')
 
     @property 
     def runtime(self):
@@ -68,7 +68,7 @@ class Selector():
         property: name of devices. Implements the getter
         @todo: is this property necessary?
         """
-        self.logger.debug("selector.deviceNames: " + str([device.name for device in self.devices]))
+        self.logger.log().debug("selector.deviceNames: " + str([device.name for device in self.devices]))
         return [device.name for device in self.devices]
 
     @property
@@ -77,7 +77,7 @@ class Selector():
         property: device_hardwareConfigs. Implements the getter
         @todo: is this property necessary ?
         """
-        self.logger.debug("selector.device_hardwareConfigs: " + 
+        self.logger.log().debug("selector.device_hardwareConfigs: " + 
         str([device.hardwareConfig for device in self.devices]))
         return [device.hardwareConfig for device in self.devices]
    
@@ -95,7 +95,7 @@ class Selector():
 
         @param newDevice_holders the new list of device_holders
         """
-        self.logger.debug("selector. set new deviceholder")
+        self.logger.log().debug("selector. set new deviceholder")
         self._device_holders = newDeviceHolders
 
     @property
@@ -114,7 +114,7 @@ class Selector():
         @param newInitTask instance of class task
         @todo: check if new init task result is returned
         """
-        self.logger.debug("selector. set new initTask")
+        self.logger.log().debug("selector. set new initTask")
         if not isinstance(newInitTask, InitTask):
             raise ValueError("object is no instance of InitTask")
         self._initTask = newInitTask
@@ -141,7 +141,7 @@ class Selector():
         """!
         property: maxSizeDeviceHolder. Implements the getter
         """
-        self.logger.debug("selector. _maxSizeDeviceHolder " + str(self._maxSizeDeviceHolder))
+        self.logger.log().debug("selector. _maxSizeDeviceHolder " + str(self._maxSizeDeviceHolder))
         return self._maxSizeDeviceHolder
 
     @maximal_size_device_holder.setter
@@ -151,7 +151,7 @@ class Selector():
 
         @param newSize new maximal number of allowd device holders.
         """
-        self.logger.debug("selector. maximal_size_device_holder " + str(newSize))
+        self.logger.log().debug("selector. maximal_size_device_holder " + str(newSize))
         self._maxSizeDeviceHolder = newSize
     
 #-------------- functions for device related aspects----------------------
@@ -159,7 +159,7 @@ class Selector():
         """! In the case that a device has connected on their own we must send 
             the init task to them before sending another tasks.
         """
-        self.logger.debug("selector. send_initTask_to_newDevices. deviceList " + str(deviceList))
+        self.logger.log().debug("selector. send_initTask_to_newDevices. deviceList " + str(deviceList))
         initializationDevices = []
         for device in deviceList:
             if device.hasTask(self.initTask.taskName) == False:
@@ -188,7 +188,7 @@ class Selector():
         @param port int with device port
         @param hardwareConfig dict with devices hardware config
         """    
-        self.logger.debug('addSingleDevice:' 
+        self.logger.log().debug('addSingleDevice:' 
                             + "deviceName " + deviceName 
                             + ",ipAdress " + str(ipAdress) 
                             + ",port " + str(port) 
@@ -212,7 +212,7 @@ class Selector():
         if deviceName in self.deviceNames:
             self.runtime.removeDevice(deviceName)
         else:
-            self.logger.error("There is no device with name " + deviceName)
+            self.logger.log().error("There is no device with name " + deviceName)
             raise ValueError("There is no device with name " + deviceName)
 
     def requestTaskAcceptance(self, task):
@@ -244,11 +244,15 @@ class Selector():
         @param taskName string with task name
         @return aggregator instance of Aggregator
         """
+        self.logger.log().debug("Selector. get_aggregator_of_task: search aggregator for task " + 
+                                taskName)
         for aggregator in self.aggregators:
             if aggregator.task.taskName == taskName:
+                self.logger.log().debug("Selector.get_aggregator_of_task: aggregator for " + 
+                                    taskName + " identified")
                 return aggregator
-        self.logger.error("The task" + taskName + "doesn't exists")
-        raise ValueError("The task ", taskName, " doesn't exists")
+
+        raise ValueError("There is no aggregator that handles task " + taskName)
 
     def addAggregator(self, newAggregator):
         """!
@@ -257,8 +261,10 @@ class Selector():
         @param newAggregator instance of aggregator
         """
         aggregators = self.aggregators
+        self.logger.log().debug("Selector.addAggregator: old " + str(len(self.aggregators)))
         aggregators = aggregators + [newAggregator]
         self.aggregators = aggregators
+        self.logger.log().debug("Selector.addAggregator: new " + str(len(self.aggregators)))
 
     def deleteAggregatorAndTask(self, taskName):
         """!
@@ -268,7 +274,11 @@ class Selector():
 
         @param taskName string with task name
         """
-        aggregator = self.get_aggregator_of_task(taskName)
+        try:
+            aggregator = self.get_aggregator_of_task(taskName)
+        except ValueError:
+            self.logger.log().error("There is no aggregator that handles task " + taskName)
+            
         aggregator.stopTask()
         self.deleteAggregator(aggregator)
         self.addTasks2Runtime()
@@ -302,7 +312,7 @@ class Selector():
                                      , maxNumChildAggregators = self._maxNumChildAggregators
                                      , logServer = None
                                      )
-        self.logger.info("max # devices in aggregator: " + str(aggregator.get_max_number_devices()))
+        self.logger.log().info("max # devices in aggregator: " + str(aggregator.get_max_number_devices()))
         self.addAggregator(aggregator)
         return aggregator
         
@@ -363,8 +373,9 @@ class Selector():
 
         @param task the task to be scheduled 
         """
-        self.logger.info("add task")
+        self.logger.log().info("selector. add task to queue")
         if task in self._taskQueue:
+            self.logger.log().error("selector. task already scheduled")
             raise KeyError("Task already scheduled")
 
         # add task to queue

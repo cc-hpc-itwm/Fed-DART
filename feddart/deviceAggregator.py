@@ -2,7 +2,7 @@ from feddart.aggregator import AggregatorBase
 from feddart.deviceHolder import DeviceHolder
 from feddart.deviceSingle import DeviceSingle
 import math
-from feddart.logger import logger
+from feddart.logServer import LogServer
 
 class DeviceAggregator(AggregatorBase):
     """!
@@ -51,8 +51,8 @@ class DeviceAggregator(AggregatorBase):
         for device in devices:
             self.addSingleDevice(device) #add here task to devices
 
-        self.logger = logger(__name__)
-        self.logger.info('Aggregator initiated')
+        self.logger = LogServer(__name__)
+        self.logger.log().info("Aggregator initiated")
 
 #--------------------------------------------        
     @property
@@ -342,7 +342,7 @@ class DeviceAggregator(AggregatorBase):
         """
         # check all deviceholders
         if not self.deviceHolders:
-            self.logger.info('no device holders available')
+            self.logger.log().info('no device holders available')
         # get all devices from the deviceholders
         taskName = self.task.taskName
         intermediateResults = []
@@ -361,13 +361,13 @@ class DeviceAggregator(AggregatorBase):
         """
 
         if not self.childAggregators:
-            self.logger.info('collect results from devices')
+            self.logger.log().info('deviceAggregator.requestAggregation: collect results from devices')
             aggregatedResult = self.aggregate_devicesResults()
             return aggregatedResult
         #TODO: in moment sequential, parallelize it
         result = []
         for aggregator in self.childAggregators:
-            self.logger.info('trigger aggregation by childaggregators')
+            self.logger.log().info('deviceAggregator.requestAggregation: trigger aggregation by childaggregators')
             result.extend(aggregator.requestAggregation())
         return result
                    

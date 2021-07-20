@@ -18,6 +18,9 @@ Feddart has an easy and comfortable user-interface to schedule tasks for the fed
 Other aspects such as communication, connection handling, logging are handled by feddart. The end
 user is only responsible for the federated learning algorithm.
 
+### Logging
+Logging is by default set to warning level. In case you want to get more log-information, please set the flag
+``` -log (0,1,2,3,4,5) ``` to adjust the log level accordingly. More information is provided by ```--help```
 ### DART-Server
 The DART-Server is responsible for communication and task sheduling on the client devices. The communication between
 server and clients is done via DART, a Python wrapper around GPI-Space.

@@ -1,5 +1,5 @@
 from feddart.deviceSingle import DeviceSingle
-
+from feddart.logServer import LogServer
 
 class DeviceHolder():
     """!
@@ -19,6 +19,9 @@ class DeviceHolder():
         self._maxSize = maxSize
         self._devicesFinished = False
 
+        self.logger = LogServer(__name__)
+        self.logger.log().info("DeviceHolder initiated")
+
     @property
     def maxSize(self):
         """!
@@ -31,6 +34,7 @@ class DeviceHolder():
         """!
         property: device names. Implements the getter
         """
+        self.logger.log().debug(str(locals))
         return [str(device) for device in self._deviceList ]
 
     @property
@@ -57,11 +61,13 @@ class DeviceHolder():
         @param deviceParameterDict dict of format like {"arg1: 5, "arg2": 10}
         """
         if self.check_full():
+            self.logger.log().error("DeviceHolder already full!")
             raise ValueError("DeviceHolder already full!")
         
         assert isinstance(newDevice, DeviceSingle), "Device must be an instance of DeviceSingle"
         newDevice.addTask(taskName, deviceParameterDict)
         self.devices.append(newDevice)
+        self.logger.log().debug("DeviceHolder: new device added " + str(locals()))
 
     def removeDevice(self, device):
         """!
@@ -70,6 +76,11 @@ class DeviceHolder():
         """
         if device in self.devices:
             self.devices.remove(device)
+            self.logger.log().debug("DeviceHolder.removeDevice: device removed")
+            return
+
+        self.logger.log().warn("DeviceHolder.removeDevice: device not in list")
+
 
     def check_full(self):
         """!
@@ -77,6 +88,9 @@ class DeviceHolder():
 
         @return boolean
         """
+        self.logger.log().debug("DeviceHolder.check_full: size " +  
+                                str(len(self.devices)) + 
+                                " max size: " + str(self.maxSize))
         if len(self.devices) == self.maxSize:
             return True
         else:
@@ -88,6 +102,7 @@ class DeviceHolder():
 
         @return boolean
         """
+        self.logger.log().debug("DeviceHolder.check_empty: " + str(len(self.devices)))
         if len(self.devices) == 0:
             return True
         else:
@@ -103,9 +118,16 @@ class DeviceHolder():
         """
         if self.check_empty() == False:
             runtime = self.getRuntime()
+            self.logger.log().debug("DeviceHolder.stopTask " + taskName)
             for device in self.devices:
                 if device.isOpenTask(taskName):
+                    self.logger.log().debug("remove Task " + str(vars(device)))
                     device.removeOpenTask(taskName)
+                else:
+                    self.logger.log().debug("DeviceHolder.stopTask: Task is " + 
+                                        taskName + 
+                                        " not on device " + 
+                                        device.name)
             runtime.stopTask(taskName)
 
     def getRuntime(self):
