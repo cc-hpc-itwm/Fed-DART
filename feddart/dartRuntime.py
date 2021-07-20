@@ -215,6 +215,26 @@ class DartRuntime:
         self._selector = Selector(self, max_size_deviceHolder)
         return self._selector
 
+    def add_SingleDevice( self, device):
+        """!
+        Add an already existing single device (one worker per device) to runtime. send directly the
+        initTask to device.
+        
+        @param device device to be registered
+        """
+        self.logger.log().debug("dartRuntime.add_SingleDevice " + str(locals())) 
+        if device.name in self._registeredDevices.keys():
+            self.logger.log().error("device name already in list: " + device.name)
+            raise KeyError("device name already in list")
+        
+        self._registeredDevices[device.name] = device
+        #add workers is blocking!
+        self.restAPIClient.add_worker( [device.ipAdress], 1, device.name, [""],0,{})
+        if device.initTask is not None:
+            device.startTask(device.initTask)
+        #TODO Luca: where to specify port ?!
+        self.logger.log().info("dartRuntime.add_SingleDevice " + device.name + " registered") 
+
     
     def generate_and_add_SingleDevice( self
                        , deviceName
