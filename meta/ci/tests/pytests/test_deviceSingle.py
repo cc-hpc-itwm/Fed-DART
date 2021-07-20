@@ -112,8 +112,8 @@ def test_GetFinishedTaskResult(deviceSingle, finishedtaskName_one, finished_task
 
 def test_hasTask(deviceSingle, taskName_one, finished_task_result_one):
     "Check if the device has a task with such an name in open or finished tasks"
-    assert deviceSingle.hasTask("task_one")
-    assert deviceSingle.hasTask("finished_task_one")
+    assert deviceSingle.hasTask(taskName_one)
+    assert deviceSingle.hasTask(finished_task_result_one)
     assert not deviceSingle.hasTask("task_three")
 
 
