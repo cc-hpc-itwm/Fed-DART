@@ -7,18 +7,27 @@ import argparse
 from feddart.workflowManager import WorkflowManager
 import os
 
-from feddart.logServer import LogServer
+parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
+parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
+parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
+parser.add_argument('--logLevel', '-l', help = "log level of Fed-DART: lower value means more logging", default = 3)
+args = parser.parse_args()
+if args.mode == "test":
+    manager = WorkflowManager( testMode = True
+                             , errorProbability = args.errorProbability
+                             , logLevel = args.logLevel
+                             )
+elif args.mode == "real":
+    manager = WorkflowManager(logLevel = args.logLevel)
+else:
+    raise ValueError("Wrong options for example")
 
-
-manager = WorkflowManager()
-
-logger = LogServer(__name__)
 #inittask is an optional task, which must be executed on each client for initialization
 manager.createInitTask( parameterDict = {"init_var": 'hello'}
                       , filePath = "hello_world_client"
                       , executeFunction = "init"
                       )
-if manager.config.mode == "test":
+if args.mode == "test":
     if os.path.isfile("../serverFile.json"):
         rt_filepath = "../serverFile.json"
         device_filepath = "../dummydeviceFile.json"
@@ -27,9 +36,9 @@ if manager.config.mode == "test":
         device_filepath = os.environ['FEDDARTPATH'] + "examples/dummydeviceFile.json"
 
     manager.startFedDART( runtimeFile = rt_filepath
-                    , deviceFile = device_filepath
-                    , maximal_numberDevices = 100
-                    )
+                        , deviceFile = device_filepath
+                        , maximal_numberDevices = 100
+                        )
 else: 
     manager.startFedDART( runtimeFile = "../serverFile.json" 
                         , deviceFile = None 
@@ -48,18 +57,10 @@ manager.startTask( taskType = 1
                  , filePath = "hello_world_client" 
                  , executeFunction = "hello_world_2"
                  )
-time.sleep(5)
+time.sleep(15)
 taskStatus = manager.getTaskStatus("task_one")
 taskResult = manager.getTaskResult("task_one")
-
-logger.log().info(str(taskStatus))
 for deviceResult in taskResult:
-    logger.log().info(str(deviceResult))
-time.sleep(10)
-taskStatus = manager.getTaskStatus("task_one")
-logger.log().info(str(taskStatus))
-taskResult = manager.getTaskResult("task_one")
-for deviceResult in taskResult:
-    logger.log().info(str(deviceResult.resultList))
-    logger.log().info(str(deviceResult.duration))
-    logger.log().info(str(deviceResult.deviceName))
+    print(deviceResult.resultList)
+    print(deviceResult.duration)
+    print(deviceResult.deviceName)

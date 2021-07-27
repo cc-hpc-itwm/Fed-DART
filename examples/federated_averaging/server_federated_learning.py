@@ -9,13 +9,15 @@ import os
 parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
 parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
 parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
+parser.add_argument('--logLevel', '-l', help = "log level of Fed-DART: lower value means more logging", default = 3)
 args = parser.parse_args()
 if args.mode == "test":
     manager = WorkflowManager( testMode = True
-                             , errorProbability = int(args.errorProbability)
+                             , errorProbability = args.errorProbability
+                             , logLevel = args.logLevel
                              )
 elif args.mode == "real":
-    manager = WorkflowManager()
+    manager = WorkflowManager(logLevel = args.logLevel)
 else:
     raise ValueError("Wrong options for example")
 global_model = keras.Sequential([ Dense(2, activation='relu', input_shape=(28 * 28,))
@@ -45,6 +47,7 @@ else:
                         , maximal_numberDevices = 100
                         )
 LEARNING_ROUNDS = 4
+MAX_COUNTER = 30
 list_devices = manager.getAllDeviceNames()
 time.sleep(5) #wait init task finished
 for learning_round in range(LEARNING_ROUNDS):
@@ -55,7 +58,7 @@ for learning_round in range(LEARNING_ROUNDS):
     for idx, device in enumerate(list_devices):
         parameterDict[device] = { "global_model_weights": global_model_weights 
                                 , "batch_size": 10*idx + 8
-                                , "epochs": idx + 1 
+                                , "epochs": 2
                                 }
     manager.startTask( taskType = 1 
                      , taskName = task_name
@@ -63,8 +66,12 @@ for learning_round in range(LEARNING_ROUNDS):
                      , filePath = "client_learning" 
                      , executeFunction = "learn"
                      )
+    counter = 0
     while manager.getTaskStatus(task_name) != manager.TASK_STATUS_FINISHED:
         time.sleep(3)
+        counter += 1
+        if counter > MAX_COUNTER:
+            break
     taskResult = manager.getTaskResult(task_name) #return all results which are currently available
     local_weights = []
     for device_result in taskResult:
@@ -72,5 +79,6 @@ for learning_round in range(LEARNING_ROUNDS):
     local_weights = np.array(local_weights, dtype = object)
     global_weights = np.mean(local_weights, axis = 0)
     global_model.set_weights(global_weights)
+    print("Global learning round %s finished!"%(str(learning_round+1)))
    
 #manager.stopFedDART() optional you can shut down the server with stopFedDART()
