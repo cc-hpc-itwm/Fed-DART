@@ -95,8 +95,6 @@ class Job:
         #sequentical execution
         for task in self.task_list:
             path_file = task.worker.hosts + "/" + self.module_path
-            if not os.path.isfile(path_file):
-                print(path_file)
             path_file = path_file.replace("/", ".")
             imp = import_module(path_file)
             execute_function = getattr(imp, self.method)

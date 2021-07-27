@@ -15,7 +15,7 @@ class LogServer(metaclass=Singleton):
     DEBUG = logging.DEBUG
     FATAL = logging.FATAL
 
-    def __init__(self, name, console_level = ERROR, 
+    def __init__(self, name, console_level = ERROR,
                 file_level = INFO, logfile_path = "feddart.log"):
         file_formatter = logging.Formatter(
             '%(asctime)s~%(levelname)s~%(message)s~module:%(module)s~function:%(module)s')

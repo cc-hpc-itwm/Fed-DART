@@ -14,6 +14,9 @@ class WorkflowManager:
     TASK_STATUS_FINISHED = "finished"
 
     def __init__( self
+                , testMode = False
+                , errorProbability = 0
+                , logLevel = 3
                 , maxSizeDeviceHolder = 10
                 , maximalNumberOpenJobs = 10
                 ):
@@ -24,25 +27,20 @@ class WorkflowManager:
         Or first create selector and than add runtime to that ? better
         if we have multiple server ?
         """
-
         self._runtime = None
         self._selector = None
         self._maxSizeDeviceHolder = maxSizeDeviceHolder
         self._maximalNumberOpenJobs = maximalNumberOpenJobs
         self._initTask = None
-
-        helper = Helper()
-        self._args = helper.config
-
-        self._testMode = self._args.mode
-        self._errorProbability = int(self._args.errorProbability)
+        self._testMode = testMode
+        self._errorProbability = int(errorProbability)
         
-        loglevel = LogServer.WARN
-        if int(self._args.logLevel) == 0:
+        loglevel = LogServer.ERROR
+        if int(logLevel) == 0:
             loglevel = LogServer.DEBUG
-        elif int(self._args.logLevel) == 1:
+        elif int(logLevel) == 1:
             loglevel = LogServer.INFO
-        elif int(self._args.logLevel) == 3:
+        elif int(logLevel) == 3:
             loglevel = LogServer.ERROR
         else:
             loglevel = LogServer.FATAL
