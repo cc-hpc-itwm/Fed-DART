@@ -1,4 +1,4 @@
-from feddart.messageTranslator import feddart
+from messageTranslatorClient import feddart
 import os
 import numpy as np 
 from tensorflow import keras 

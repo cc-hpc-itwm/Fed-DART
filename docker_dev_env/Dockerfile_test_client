@@ -40,14 +40,12 @@ RUN pip3 install scikit-learn
 RUN pip3 install dill
 
 RUN git clone https://github.com/cc-hpc-itwm/Fed-DART.git /home/ubuntu/Fed-DART
-RUN cd /home/ubuntu/Fed-DART/feddartClient/ && pip3 install .
+#RUN cd /home/ubuntu/Fed-DART && pip3 install .
 RUN cd /home/ubuntu/Fed-DART/dart && tar -xf dart_x86_64.tar.gz
 
-WORKDIR /home/ubuntu/Fed-DART/dart/dart/bin/ 
-USER ubuntu
+#WORKDIR /home/ubuntu/Fed-DART/dart/dart/bin/
+#USER ubuntu
 ADD entrypoint_client.sh /entrypoint_client.sh
-RUN rm /home/ubuntu/Fed-DART/dart/dart/worker/worker.json
-ADD worker.json /home/ubuntu/Fed-DART/dart/dart/worker/worker.json
 USER root
 RUN chmod +x /entrypoint_client.sh
 USER  ubuntu

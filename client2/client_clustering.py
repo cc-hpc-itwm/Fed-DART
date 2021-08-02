@@ -1,4 +1,4 @@
-from feddart.messageTranslator import feddart
+from feddartClient.feddart.messageTranslatorClient import feddart
 import random
 import numpy as np
 from sklearn.cluster import KMeans 

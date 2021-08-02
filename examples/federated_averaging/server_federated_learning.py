@@ -9,7 +9,7 @@ import os
 parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
 parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
 parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
-parser.add_argument('--logLevel', '-l', help = "log level of Fed-DART: lower value means more logging", default = 3)
+parser.add_argument('--logLevel', '-l', help = "log level of Fed-DART: lower value means more logging", default = 0)
 args = parser.parse_args()
 if args.mode == "test":
     manager = WorkflowManager( testMode = True

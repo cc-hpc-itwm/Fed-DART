@@ -1,9 +1,8 @@
-from feddart.messageTranslator import feddart
+from messageTranslatorClient import feddart
 import tensorflow as tf
 import os 
-from tensorflow import keras 
-import numpy as np
-from tensorflow.keras.utils import to_categorical 
+from tensorflow import keras
+from tensorflow.keras.utils import to_categorical
 MODEL_NAME = "client_model"
 
 def get_mnist_train_data():
