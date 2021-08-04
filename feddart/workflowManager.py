@@ -268,7 +268,7 @@ class WorkflowManager:
             self.selector.addTask2Queue(task, priority)
             self.logger.log().info("task accepted")
         # task rejected
-        else: 
+        else:
             self.logger.log().info("task was not accepted - change your constraints?")
         self.logger.log().debug("start task." + str(locals()))
         return request_status

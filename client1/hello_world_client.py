@@ -1,4 +1,4 @@
-from messageTranslatorClient import feddart
+from feddart.messageTranslator import feddart
 import time
 
 @feddart

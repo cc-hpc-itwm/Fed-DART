@@ -55,6 +55,10 @@ class MessageTranslator(MessageTranslatorBase):
                 device_result['duration'] = result['duration']
                 device_result['result'] = cls.unpackBackMessage(result['success'])
                 resultID = result['id']
+            if 'error' in result.keys() and deviceName == workerName:
+                device_result['duration'] = result['duration']
+                device_result['result'] = {"error": result['error']}
+                resultID = result['id']
         logstring = ""
         if device_result['result'] is not None:
             logstring = logstring + str(device_result['duration']) + " "
@@ -73,10 +77,45 @@ class MessageTranslator(MessageTranslatorBase):
         return str(message)
 
     @classmethod
+    def packBackMessage(cls, message):
+        message = dill.dumps(message)
+        message = binascii.b2a_base64(message)
+        return message
+
+    @classmethod
+    def unpackMessage(cls, message):
+        message = ast.literal_eval(message)
+        message = binascii.a2b_base64(message)
+        message = dill.loads(message)
+        return message
+
+    @classmethod
     def unpackBackMessage(cls, message):
         message = binascii.a2b_base64(message)
         message = dill.loads(message)
         return message
+
+def feddart(execute_function):
+    @functools.wraps(execute_function)
+    def wrapper_function(_params):
+        params = MessageTranslator.unpackMessage(_params)
+        try:
+            result = execute_function(**params)
+        except Exception as e:
+            result = e
+        counter = 0
+        result_dict = {}
+        if type(result) is tuple:
+            for element in result:
+                result_dict['result_' + str(counter)] = element
+                counter += 1
+        else:
+            result_dict['result_0'] = result
+        packed_result_dict = MessageTranslator.packBackMessage(result_dict)
+        return packed_result_dict
+
+    return wrapper_function
+
 
 
 
