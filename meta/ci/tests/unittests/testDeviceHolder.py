@@ -121,13 +121,13 @@ class TestDeviceSingle(unittest.TestCase):
         parameterDict = task.parameterDict
         deviceHolder.addDevice(self.deviceOne, taskName, parameterDict)
         deviceHolder.addDevice(self.deviceTwo, taskName, parameterDict)
-        self.dartRuntime.addSingleDevice( self.deviceOne.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceOne.name
                                         , self.deviceOne.ipAdress
                                         , self.deviceOne.port 
                                         , self.deviceOne.hardwareConfig
                                         , self.deviceOne.initTask
                                         )
-        self.dartRuntime.addSingleDevice( self.deviceTwo.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceTwo.name
                                         , self.deviceTwo.ipAdress
                                         , self.deviceTwo.port 
                                         , self.deviceTwo.hardwareConfig
@@ -155,13 +155,13 @@ class TestDeviceSingle(unittest.TestCase):
                                    )
         deviceHolder.addDevice(self.deviceOne, task.taskName, task.parameterDict)
         deviceHolder.addDevice(self.deviceTwo, task.taskName, task.parameterDict)
-        self.dartRuntime.addSingleDevice( self.deviceOne.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceOne.name
                                         , self.deviceOne.ipAdress
                                         , self.deviceOne.port 
                                         , self.deviceOne.hardwareConfig
                                         , self.deviceOne.initTask
                                         )
-        self.dartRuntime.addSingleDevice( self.deviceTwo.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceTwo.name
                                         , self.deviceTwo.ipAdress
                                         , self.deviceTwo.port 
                                         , self.deviceTwo.hardwareConfig
@@ -196,13 +196,13 @@ class TestDeviceSingle(unittest.TestCase):
                                  , configFile
                                  )
         deviceHolder = DeviceHolder(maxSize)
-        self.dartRuntime.addSingleDevice( self.deviceOne.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceOne.name
                                         , self.deviceOne.ipAdress
                                         , self.deviceOne.port 
                                         , self.deviceOne.hardwareConfig
                                         , self.deviceOne.initTask
                                         )
-        self.dartRuntime.addSingleDevice( self.deviceTwo.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceTwo.name
                                         , self.deviceTwo.ipAdress
                                         , self.deviceTwo.port 
                                         , self.deviceTwo.hardwareConfig

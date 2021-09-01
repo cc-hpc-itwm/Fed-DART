@@ -7,6 +7,7 @@ parentdir = os.path.dirname(currentdir)
 parentdir = os.path.dirname(parentdir)
 parentdir = os.path.dirname(parentdir)
 parentdir = os.path.dirname(parentdir)
+print(parentdir)
 sys.path.insert(0, parentdir) 
 from feddart.deviceSingle import DeviceSingle
 from feddart.dartRuntime import DartRuntime
@@ -173,7 +174,8 @@ class TestDeviceSingle(unittest.TestCase):
         self.assertTrue( self.deviceSingle.hasTask("task_three") == False
                        , msg = "Device should not have task"
                        )
-    
+
+
     def testInitTask(self):
         "Check if the init task is executed"
         taskName = "task_one"
@@ -193,16 +195,8 @@ class TestDeviceSingle(unittest.TestCase):
                        )
         self.deviceSingle._initialized = False
         self.deviceSingle.initTask = task
-        self.dartRuntime.addSingleDevice( self.deviceSingle.name
-                                        , self.deviceSingle.ipAdress
-                                        , self.deviceSingle.port 
-                                        , self.deviceSingle.hardwareConfig
-                                        , self.deviceSingle.initTask
-                                        )
-        # addSingleDevice creates a new instance of deviceSingle, therefore
-        # it must be explicitly add to self.deviceSingle afterwards 
-        self.deviceSingle.addTask(task.taskName, task.parameterDict)
-        self.deviceSingle.startTask(task)
+        self.deviceSingle.addTask(task.taskName,  task.parameterDict)
+        self.dartRuntime.add_SingleDevice( self.deviceSingle)
         self.assertTrue( self.deviceSingle.initialized
                        , msg = "Device should be initialized"
                        )
@@ -222,7 +216,7 @@ class TestDeviceSingle(unittest.TestCase):
                                  , "test" #function
                                  , configFile
                                  )
-        self.dartRuntime.addSingleDevice( self.deviceSingle.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceSingle.name
                                         , self.deviceSingle.ipAdress
                                         , self.deviceSingle.port 
                                         , self.deviceSingle.hardwareConfig
@@ -282,7 +276,7 @@ class TestDeviceSingle(unittest.TestCase):
                                  , "test" #function
                                  , configFile
                                  )
-        self.dartRuntime.addSingleDevice( self.deviceSingle.name
+        self.dartRuntime.generate_and_add_SingleDevice( self.deviceSingle.name
                                         , self.deviceSingle.ipAdress
                                         , self.deviceSingle.port 
                                         , self.deviceSingle.hardwareConfig

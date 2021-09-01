@@ -274,7 +274,7 @@ class DeviceSingle(AbstractDeviceBase):
         """
         taskName = task.taskName
         if not self.hasTask(taskName):
-            raise ValueError("Add the task", taskName, "to device", self.name, "before starting the task!")
+            raise ValueError("Add the task >>" + taskName + "<< to device >>" + self.name + "<< before starting the task!")
         #return 0 means unknown
         if self.dartRuntime.get_job_status(taskName) == 0:
             self.dartRuntime.add_job( taskName
