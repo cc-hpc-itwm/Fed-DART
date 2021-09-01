@@ -1,0 +1,55 @@
+version: "3.9"
+services:
+    dart-server:
+        build:
+            context: .
+            dockerfile: Dockerfile_test_server
+        networks: 
+            frontend:
+                ipv4_address: 172.20.1.1
+        hostname: "dart-server" 
+        ports:
+         - "7777:7777"
+        volumes:
+            - ssh_keys:/public_key/
+            
+    dart-client1:
+        depends_on:
+            - dart-server
+        build:
+            context: .
+            dockerfile: Dockerfile_test_client
+        environment:
+            - server_ip=dart-server
+            - client_name="client1"
+        networks: 
+            frontend:
+        volumes:
+            - ssh_keys:/public_key_server/
+            - ../client1:/home/ubuntu/Fed-DART/dart/dart/worker
+            - ../client1:/home/ubuntu/Fed-DART/client1
+            
+    dart-client2:
+        depends_on:
+            - dart-server
+        build:
+            context: .
+            dockerfile: Dockerfile_test_client
+        environment:
+            - server_ip=dart-server
+            - client_name="client2"
+        networks: 
+            frontend:
+        volumes:
+            - ssh_keys:/public_key_server/
+            - ../client2:/home/ubuntu/Fed-DART/dart/dart/worker
+            - ../client2:/home/ubuntu/Fed-DART/client2
+            
+volumes:
+    ssh_keys: {}
+    
+networks:
+    frontend:
+        ipam:
+            config:
+                - subnet: 172.20.0.0/16

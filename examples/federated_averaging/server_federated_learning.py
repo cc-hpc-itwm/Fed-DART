@@ -9,7 +9,7 @@ import os
 parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
 parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
 parser.add_argument('--errorProbability', '-ep', help = "probability for errors in test mode", default = 0)
-parser.add_argument('--logLevel', '-l', help = "log level of Fed-DART: lower value means more logging", default = 3)
+parser.add_argument('--logLevel', '-l', help = "log level of Fed-DART: lower value means more logging", default = 2)
 args = parser.parse_args()
 if args.mode == "test":
     manager = WorkflowManager( testMode = True
@@ -60,7 +60,7 @@ for learning_round in range(LEARNING_ROUNDS):
                                 , "batch_size": 10*idx + 8
                                 , "epochs": 2
                                 }
-    manager.startTask( taskType = 1 
+    manager.startTask( taskType = 1
                      , taskName = task_name
                      , parameterDict =  parameterDict
                      , filePath = "client_learning" 
@@ -80,5 +80,4 @@ for learning_round in range(LEARNING_ROUNDS):
     global_weights = np.mean(local_weights, axis = 0)
     global_model.set_weights(global_weights)
     print("Global learning round %s finished!"%(str(learning_round+1)))
-   
 #manager.stopFedDART() optional you can shut down the server with stopFedDART()
