@@ -2,13 +2,10 @@ from tensorflow.keras.layers import *
 from tensorflow import keras
 from feddart.workflowManager import WorkflowManager
 import numpy as np
+import argparse
 import time 
 import os
-from feddart.logServer import LogServer
 
-manager = WorkflowManager()
-
-logger = LogServer(__name__)
 
 parser = argparse.ArgumentParser(description="Choose real or test mode for DART")
 parser.add_argument('--mode', '-m', help = "test or real mode", default = "real")
@@ -34,7 +31,7 @@ manager.createInitTask( parameterDict = {"model_structure": global_model.to_json
                       , filePath = "client_learning"
                       , executeFunction = "init"
                       )
-if manager.config.mode == "test":
+if args.mode == "test":
     if os.path.isfile("../serverFile.json"):
         rt_filepath = "../serverFile.json"
         device_filepath = "../dummydeviceFile.json"
