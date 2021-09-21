@@ -14,3 +14,11 @@
    - User can fetch the currently connected devices from server
 ## Changed
    - The examples are updated, such that the all currently connected devices are used
+
+# 2021-09-21
+## Added
+   - Development environment with Docker Containers
+   - Logging 
+   - User can fetch new connected devices from server
+   - New class collection, to handle devices over multiple learning rounds (e.g
+     Personalized Federated Learning)

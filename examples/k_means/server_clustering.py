@@ -43,20 +43,24 @@ else:
                         , maximal_numberDevices = 100
                         )
 list_devices = manager.getAllDeviceNames()
+collection0 = manager.createCollection([list_devices[0]]) #maybe return only clustername
+collection1 = manager.createCollection([list_devices[1]])
+collection0.addDevicebyName(list_devices[1])
+collection1.removeDevicebyName(list_devices[1])
 time.sleep(6) #wait init task finished
 for global_round in range(DEFAULT_NUM_ITERATIONS):
     task_name = "task_" + str(global_round) #task name must be unique
     global_centroids = np.array([[-1,0], [0, 2]])
-    list_devices = manager.getAllDeviceNames()
+    new_devices = manager.getNewDeviceNames()
     parameterDict = {}
-    for idx, device in enumerate(list_devices):
-        parameterDict[device] = { "global_centroids": global_centroids 
-                                , "local_iterations": idx + 2
+    for idx, device in enumerate(collection0.ActiveDeviceNames):
+        parameterDict[device] = { "global_centroids": global_centroids
+                                , "local_iterations": 2
                                 }
-    manager.startTask( taskType = 1 
+    manager.startTask( taskType = 1
                      , taskName = task_name
-                     , parameterDict =  parameterDict
-                     , filePath = "client_clustering" 
+                     , parameterDict = parameterDict
+                     , filePath = "client_clustering"
                      , executeFunction = "local_k_means"
                      )
     time.sleep(10) #wait on result, FedDART is non blocking
