@@ -2,6 +2,7 @@ from feddart.dartRuntime import DartRuntime
 from feddart.defaultTask import DefaultTask
 from feddart.specificDeviceTask import SpecificDeviceTask
 from feddart.initTask import InitTask
+from feddart.collection import Collection
 import json
 import time
 
@@ -33,6 +34,7 @@ class WorkflowManager:
         self._maximalNumberOpenJobs = maximalNumberOpenJobs
         self._initTask = None
         self._testMode = testMode
+        self._currentDeviceNames = []
         self._errorProbability = int(errorProbability)
         
         loglevel = LogServer.ERROR
@@ -189,8 +191,35 @@ class WorkflowManager:
 
         @return: list of device names
         """
-        self.logger.log().debug("getAllDeviceNames. deviceNames " + str(self.selector.deviceNames))
-        return self.selector.deviceNames
+        deviceNames = self.selector.deviceNames
+        self.logger.log().debug("getAllDeviceNames. deviceNames " + str(deviceNames))
+        if self._currentDeviceNames == []:
+            self._currentDeviceNames = deviceNames
+        return deviceNames
+
+    def getNewDeviceNames(self):
+        """!
+        Return all known devices with name to the end user
+
+        @return: list of device names
+        """
+        oldDeviceNames = self._currentDeviceNames
+        currentDeviceNames = self.selector.deviceNames
+        newDeviceNames = []
+        for deviceName in currentDeviceNames:
+            if deviceName not in oldDeviceNames:
+                newDeviceNames.append(deviceName)
+        self.logger.log().debug("getAllDeviceNames. deviceNames " + str(newDeviceNames))
+        return newDeviceNames
+
+    def createCollection(self, deviceNames):
+        """!
+        Cluster the devices to a group.
+
+        @param deviceNames: list of device names
+        @return: instance of class Cluster
+        """
+        return Collection( self, deviceNames)
 
     def stopTask(self, taskName):
         """!
@@ -237,6 +266,7 @@ class WorkflowManager:
                  , configFile = None
                  , priority = False
                  , numDevices = -1
+                 , cluster = None
                  ):
         """!
         @param executeFunction name of function, which should be executed in filePath

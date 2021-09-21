@@ -194,6 +194,12 @@ manager.removeDevice(deviceName)
 manager.getAllDeviceNames() 
 ```
 
+* Get the name of all devices, which are new since the last call
+  of manager.getAllDeviceNames.
+```python
+manager.getNewDeviceNames()
+```
+
 * Shut down the DART-server
 ```python
 manager.stopFedDART() 
@@ -209,6 +215,25 @@ taskResult.duration
 ```python
 taskResult.resultDict #format like {"result_0": 5, "result_1": 2 }
 taskResult.resultList #format like [5,2]
+```
+
+## API of collection
+For some use-cases like Personalized Federated Learning it makes sense to group 
+certain devices to a collection for a better handling over different global learning rounds.
+To create a collection call the workflowmanger with the property 
+```python
+manager.createCollection(["device_0", "device_1"])
+```
+together with a list of the device names.
+Devices can be added or removed to a collection
+```python
+collection.addDevicebyName("device_3")
+collection.removeDevicebyName("device_0")
+```
+A list with all active devices in a collection can 
+be fetched with
+```python
+collection.ActiveDeviceNames
 ```
 
 ## Further remarks
