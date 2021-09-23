@@ -51,15 +51,14 @@ time.sleep(2)
 parameterDict = {}
 for idx, device in enumerate(list_devices):
     parameterDict[device] = { "param1": idx ,"param2": idx + 2}
-manager.startTask( taskType = 1 
-                 , taskName = "task_one"
-                 , parameterDict =  parameterDict
-                 , filePath = "hello_world_client" 
-                 , executeFunction = "hello_world_2"
-                 )
+handle = manager.startTask( taskType = 1
+                          , parameterDict =  parameterDict
+                          , filePath = "hello_world_client"
+                          , executeFunction = "hello_world_2"
+                          )
 time.sleep(15)
-taskStatus = manager.getTaskStatus("task_one")
-taskResult = manager.getTaskResult("task_one")
+taskStatus = manager.getTaskStatus(handle)
+taskResult = manager.getTaskResult(handle)
 for deviceResult in taskResult:
     print(deviceResult.resultList)
     print(deviceResult.duration)

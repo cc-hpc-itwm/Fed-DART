@@ -88,15 +88,14 @@ for idx, device in enumerate(list_devices):
 ```
 Afterwards start the task.
 ```python
-manager.startTask( taskType = 1 
-                 , taskName = task_name
-                 , parameterDict = parameterDict
-                 , filePath = "client_learning" 
-                 , executeFunction = "learn"
-                 )
-while manager.getTaskStatus(task_name) != manager.TASK_STATUS_FINISHED:
+handle = manager.startTask( taskType = 1 
+                          , parameterDict = parameterDict
+                          , filePath = "client_learning" 
+                          , executeFunction = "learn"
+                          )
+while manager.getTaskStatus(handle) != manager.TASK_STATUS_FINISHED:
     time.sleep(3)
-taskResult = manager.getTaskResult(task_name) #return all results which are currently available
+taskResult = manager.getTaskResult(handle) #return all results which are currently available
 
 ```
 To execute this function we will now look on client side in the file client1/client_learning and the two functions
@@ -157,31 +156,31 @@ manager.startFedDART( runtimeFile #settings how to connect to server
 ```
 
 * Create a task. Fed-Dart will check the task requirements and accept the task if
-  the requirements are fullfilled.
+  the requirements are fullfilled. A unique identifier is returned to the user. If this identifier 
+  is equal to None the task wasn't accepted.
 ```python
-manager.startTask( taskType #atm only type one is supported
-                 , taskName #unique name of task (e.g "task_one)
-                 , parameterDict #dict of format { "device_one": {"para1": 5}
-                                #                , "device_two: {"para1": 10}}
-                 , filePath #python file of executeFunction
-                 , executeFunction #function which should be executed
-                 )
+handle = manager.startTask( taskType #atm only type one is supported
+                          , parameterDict #dict of format { "device_one": {"para1": 5}
+                                         #                , "device_two: {"para1": 10}}
+                          , filePath #python file of executeFunction
+                          , executeFunction #function which should be executed
+                          )
 ```
 * Get the status of a task by name. Result can be in "in queue", "in progress" or "finished"
 ```python
-manager.getTaskStatus( taskName) #return: "in queue", "in progresss" or "finished
+manager.getTaskStatus( handle) #return: "in queue", "in progresss" or "finished
 ```
 * At any time we can get the results of the task. The return will be a list of
   task results from the already finished clients. To get more information about the API
   of the task results, we refer to the documentation "API of task results" below.
 ```python
-manager.getTaskResult( taskName) #return: list of task results
+manager.getTaskResult( handle) #return: list of task results
 ```
 
 * Tasks can be removed from the DART-server (e.g. the task is finished). Already fetched 
   results from the server will be available locally (function will be implemented soon).
 ```python
-manager.stopTask( taskName) 
+manager.stopTask( handle) 
 ```
 
 * remove Device from the DART-Server.

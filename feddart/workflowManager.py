@@ -13,7 +13,7 @@ class WorkflowManager:
     TASK_STATUS_IN_PROGRESS = "in progess"
     TASK_STATUS_IN_QUEUE = "in queue"
     TASK_STATUS_FINISHED = "finished"
-
+    taskID = 0
     def __init__( self
                 , testMode = False
                 , errorProbability = 0
@@ -257,7 +257,6 @@ class WorkflowManager:
 
     def startTask( self
                  , taskType = 0
-                 , taskName = None
                  , parameterDict = {}
                  , model = None
                  , hardwareRequirements = {}
@@ -272,6 +271,8 @@ class WorkflowManager:
         @param executeFunction name of function, which should be executed in filePath
         """
         # defaultTask
+        taskName = "task_"+str(WorkflowManager.taskID)
+        WorkflowManager.taskID += 1
         if taskType == 0:
             task = DefaultTask( taskName
                               , parameterDict
@@ -299,6 +300,7 @@ class WorkflowManager:
             self.logger.log().info("task accepted")
         # task rejected
         else:
+            taskName = None
             self.logger.log().info("task was not accepted - change your constraints?")
         self.logger.log().debug("start task." + str(locals()))
-        return request_status
+        return taskName
