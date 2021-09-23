@@ -52,7 +52,6 @@ MAX_COUNTER = 30
 list_devices = manager.getAllDeviceNames()
 time.sleep(5) #wait init task finished
 for learning_round in range(LEARNING_ROUNDS):
-    task_name = "task_" + str(learning_round) #task name must be unique
     global_model_weights = global_model.get_weights()
     list_devices = manager.getAllDeviceNames()
     parameterDict = {}
@@ -61,19 +60,18 @@ for learning_round in range(LEARNING_ROUNDS):
                                 , "batch_size": 10*idx + 8
                                 , "epochs": 2
                                 }
-    manager.startTask( taskType = 1
-                     , taskName = task_name
-                     , parameterDict =  parameterDict
-                     , filePath = "client_learning" 
-                     , executeFunction = "learn"
-                     )
+    handle = manager.startTask( taskType = 1
+                              , parameterDict =  parameterDict
+                              , filePath = "client_learning"
+                              , executeFunction = "learn"
+                              )
     counter = 0
-    while manager.getTaskStatus(task_name) != manager.TASK_STATUS_FINISHED:
+    while manager.getTaskStatus(handle) != manager.TASK_STATUS_FINISHED:
         time.sleep(3)
         counter += 1
         if counter > MAX_COUNTER:
             break
-    taskResult = manager.getTaskResult(task_name) #return all results which are currently available
+    taskResult = manager.getTaskResult(handle) #return all results which are currently available
     local_weights = []
     for device_result in taskResult:
         local_weights.append(device_result.resultList[0])

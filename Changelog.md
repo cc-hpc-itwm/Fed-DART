@@ -22,3 +22,8 @@
    - User can fetch new connected devices from server
    - New class collection, to handle devices over multiple learning rounds (e.g
      Personalized Federated Learning)
+
+# 2021-09-21
+## Changed
+   - the user must not specify the task name anymore, this will be done now
+     automatically in Fed-DART and returns a handle for the task.

@@ -49,7 +49,6 @@ collection0.addDevicebyName(list_devices[1])
 collection1.removeDevicebyName(list_devices[1])
 time.sleep(6) #wait init task finished
 for global_round in range(DEFAULT_NUM_ITERATIONS):
-    task_name = "task_" + str(global_round) #task name must be unique
     global_centroids = np.array([[-1,0], [0, 2]])
     new_devices = manager.getNewDeviceNames()
     parameterDict = {}
@@ -57,14 +56,13 @@ for global_round in range(DEFAULT_NUM_ITERATIONS):
         parameterDict[device] = { "global_centroids": global_centroids
                                 , "local_iterations": 2
                                 }
-    manager.startTask( taskType = 1
-                     , taskName = task_name
-                     , parameterDict = parameterDict
-                     , filePath = "client_clustering"
-                     , executeFunction = "local_k_means"
-                     )
+    handle = manager.startTask( taskType = 1
+                              , parameterDict = parameterDict
+                              , filePath = "client_clustering"
+                              , executeFunction = "local_k_means"
+                              )
     time.sleep(10) #wait on result, FedDART is non blocking
-    taskResult = manager.getTaskResult(task_name) #return all results which are currently available
+    taskResult = manager.getTaskResult(handle) #return all results which are currently available
     local_centroids = []
     for device_result in taskResult:
         local_centroids.append(device_result.resultList[0])
