@@ -4,6 +4,7 @@ from feddart.specificDeviceTask import SpecificDeviceTask
 from feddart.initTask import InitTask
 from feddart.collection import Collection
 import json
+import datetime
 import time
 
 from feddart.logServer import LogServer
@@ -271,7 +272,7 @@ class WorkflowManager:
         @param executeFunction name of function, which should be executed in filePath
         """
         # defaultTask
-        taskName = "task_"+str(WorkflowManager.taskID)
+        taskName = "task_" + str(WorkflowManager.taskID) +"_" + datetime.datetime.now().isoformat()
         WorkflowManager.taskID += 1
         if taskType == 0:
             task = DefaultTask( taskName
