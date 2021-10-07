@@ -198,6 +198,15 @@ class WorkflowManager:
             self._currentDeviceNames = deviceNames
         return deviceNames
 
+    def getAvailableDeviceNames(self, listDeviceNames):
+        currentDeviceNames = self.selector.deviceNames
+        print(currentDeviceNames)
+        AvailableDeviceNames = []
+        for deviceName in currentDeviceNames:
+            if deviceName in listDeviceNames:
+                AvailableDeviceNames.append(deviceName)
+        return AvailableDeviceNames
+
     def getNewDeviceNames(self):
         """!
         Return all known devices with name to the end user
@@ -218,9 +227,9 @@ class WorkflowManager:
         Cluster the devices to a group.
 
         @param deviceNames: list of device names
-        @return: instance of class Cluster
+        @return: collection
         """
-        return Collection( self, deviceNames)
+        return Collection(self, deviceNames)
 
     def stopTask(self, taskName):
         """!
