@@ -200,7 +200,6 @@ class WorkflowManager:
 
     def getAvailableDeviceNames(self, listDeviceNames):
         currentDeviceNames = self.selector.deviceNames
-        print(currentDeviceNames)
         AvailableDeviceNames = []
         for deviceName in currentDeviceNames:
             if deviceName in listDeviceNames:
