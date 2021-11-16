@@ -6,4 +6,4 @@ touch /home/ubuntu/.ssh/authorized_keys && cat /home/ubuntu/.ssh/id_rsa.pub > /h
 sudo cp /home/ubuntu/.ssh/id_rsa.pub /public_key/
 cd /home/ubuntu/Fed-DART/dart/dart/bin
 sudo service ssh start
-sudo -u ubuntu './dart-server.exe'
+sudo -u ubuntu './dart-server.exe' --gspc-ssh-port "22" --agent-port "2220"
