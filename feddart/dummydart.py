@@ -1,6 +1,7 @@
 import json
 from enum import Enum
 from importlib import import_module
+import shutil
 import random
 import time
 import os
@@ -96,10 +97,16 @@ class Job:
         for task in self.task_list:
             path_file = task.worker.hosts + "/" + self.module_path
             path_file = path_file.replace("/", ".")
+            client_files = [pos_client for pos_client in os.listdir(os.getcwd()) if
+                            pos_client.startswith(task.worker.worker_name)]
+            for file in client_files:
+                shutil.copy(file, task.worker.hosts)
             imp = import_module(path_file)
             execute_function = getattr(imp, self.method)
             startTime = time.time()
             result = execute_function(task.parameter)
+            for file in client_files:
+                os.unlink(task.worker.hosts + os.sep + file)
             endTime = time.time()
             duration = endTime - startTime
             taskResultDict = {}
