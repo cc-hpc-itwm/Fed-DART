@@ -239,6 +239,6 @@ collection.ActiveDeviceNames
 Fed-DART is currently under development and therefore room for improvement.
 If you have any issues, suggestions for new features or new example use-cases 
 which can be integrated in our repo feel free to contact
-nico.weber@itwm.fraunhofer.de.
+jens.krueger@itwm.fraunhofer.de.
 We also have a Teams channel for announcing news regarding Fed-DART. If you want to 
 join this channel, contact us.
